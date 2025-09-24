@@ -9,7 +9,7 @@ const Testimonials = () => {
       role: 'Engineering Student',
       college: 'IIT Delhi',
       rating: 5,
-      content: 'EduPortal helped me find the perfect college for my engineering aspirations. The detailed information about placement records and faculty made my decision easier.',
+      content: 'College Predictor helped me find the perfect college for my engineering aspirations. The detailed information about placement records and faculty made my decision easier.',
       avatar: '👩‍🎓',
       course: 'Computer Science',
       year: '2023'
@@ -97,7 +97,7 @@ const Testimonials = () => {
             Success Stories
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Hear from thousands of students who found their perfect educational path through EduPortal
+            Hear from thousands of students who found their perfect educational path through College Predictor
           </p>
         </div>
 
@@ -175,7 +175,7 @@ const Testimonials = () => {
           </div>
           <div className="text-center p-6 bg-blue-50 rounded-xl">
             <div className="text-3xl font-bold text-blue-600 mb-2">90%</div>
-            <div className="text-gray-700">Would recommend EduPortal to friends</div>
+            <div className="text-gray-700">Would recommend College Predictor to friends</div>
           </div>
           <div className="text-center p-6 bg-purple-50 rounded-xl">
             <div className="text-3xl font-bold text-purple-600 mb-2">85%</div>

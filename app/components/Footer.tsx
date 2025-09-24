@@ -10,9 +10,9 @@ const Footer = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="bg-blue-600 text-white p-2 rounded-lg">
-                <span className="font-bold text-lg">EP</span>
+                <span className="font-bold text-lg">CP</span>
               </div>
-              <span className="text-xl font-bold">EduPortal</span>
+              <span className="text-xl font-bold">College Predictor</span>
             </div>
             <p className="text-gray-300 mb-4">
               Your trusted partner in educational journey. Find the best colleges, exams, and courses in India.
@@ -73,7 +73,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                <span className="text-gray-300">info@eduportal.com</span>
+                <span className="text-gray-300">info@collegepredictor.com</span>
               </div>
             </div>
           </div>
@@ -83,7 +83,7 @@ const Footer = () => {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              © 2024 EduPortal. All rights reserved.
+              © 2024 CollegePredictor. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm">
               <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">

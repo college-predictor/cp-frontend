@@ -49,7 +49,7 @@ const NewsPage = () => {
       featured: true,
       tags: ['JEE Main', 'NTA', 'Registration', 'Engineering'],
       image: '/api/placeholder/600/300',
-      source: 'EduPortal News'
+      source: 'College Predictor News'
     },
     {
       id: 2,

@@ -18,9 +18,9 @@ const Header = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="bg-blue-600 text-white p-2 rounded-lg">
-              <span className="font-bold text-xl">EP</span>
+              <span className="font-bold text-xl">CP</span>
             </div>
-            <span className="text-xl font-bold text-gray-800">EduPortal</span>
+            <span className="text-xl font-bold text-gray-800">College Predictor</span>
           </Link>
 
           {/* Search Bar */}

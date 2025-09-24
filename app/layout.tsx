@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "EduPortal - Your Gateway to Education in India",
+  title: "College Predictor - Your Gateway to Education in India",
   description: "Comprehensive information about Indian exams, colleges, courses, and educational opportunities",
 };
 
