@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, MapPin, Star, Users, TrendingUp, SortAsc, Grid, List } from 'lucide-react';
+import { Search, Filter, MapPin, Star, Users, TrendingUp, SortAsc, Grid, List, Loader2 } from 'lucide-react';
+import { collegeService, College, ApiError } from '@/lib/api';
 
 const CollegesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,124 +13,73 @@ const CollegesPage = () => {
   const [sortBy, setSortBy] = useState('ranking');
   const [viewMode, setViewMode] = useState('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [colleges, setColleges] = useState<College[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalColleges, setTotalColleges] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  // Sample colleges data
-  const colleges = [
-    {
-      id: 1,
-      name: 'Indian Institute of Technology Delhi',
-      shortName: 'IIT Delhi',
-      location: 'New Delhi',
-      state: 'Delhi',
-      rating: 4.8,
-      reviews: 2453,
-      type: 'Public',
-      category: 'Engineering',
-      established: 1961,
-      fees: '₹2.5 Lakhs',
-      placement: '₹25 LPA',
-      ranking: 2,
-      featured: true,
-      courses: 42,
-      students: 8000,
-      image: '/api/placeholder/400/300'
-    },
-    {
-      id: 2,
-      name: 'All India Institute of Medical Sciences',
-      shortName: 'AIIMS Delhi',
-      location: 'New Delhi',
-      state: 'Delhi',
-      rating: 4.9,
-      reviews: 1876,
-      type: 'Public',
-      category: 'Medical',
-      established: 1956,
-      fees: '₹1.5 Lakhs',
-      placement: '₹30 LPA',
-      ranking: 1,
-      featured: true,
-      courses: 28,
-      students: 3000,
-      image: '/api/placeholder/400/300'
-    },
-    {
-      id: 3,
-      name: 'Indian Institute of Management Ahmedabad',
-      shortName: 'IIM Ahmedabad',
-      location: 'Ahmedabad',
-      state: 'Gujarat',
-      rating: 4.7,
-      reviews: 1234,
-      type: 'Public',
-      category: 'Management',
-      established: 1961,
-      fees: '₹25 Lakhs',
-      placement: '₹35 LPA',
-      ranking: 1,
-      featured: true,
-      courses: 15,
-      students: 1200,
-      image: '/api/placeholder/400/300'
-    },
-    {
-      id: 4,
-      name: 'Indian Institute of Science',
-      shortName: 'IISc Bangalore',
-      location: 'Bangalore',
-      state: 'Karnataka',
-      rating: 4.8,
-      reviews: 987,
-      type: 'Public',
-      category: 'Science & Research',
-      established: 1909,
-      fees: '₹2 Lakhs',
-      placement: '₹28 LPA',
-      ranking: 1,
-      featured: true,
-      courses: 35,
-      students: 4500,
-      image: '/api/placeholder/400/300'
-    },
-    {
-      id: 5,
-      name: 'Delhi University',
-      shortName: 'DU',
-      location: 'New Delhi',
-      state: 'Delhi',
-      rating: 4.5,
-      reviews: 5432,
-      type: 'Public',
-      category: 'Arts & Science',
-      established: 1922,
-      fees: '₹50,000',
-      placement: '₹8 LPA',
-      ranking: 12,
-      featured: false,
-      courses: 180,
-      students: 400000,
-      image: '/api/placeholder/400/300'
-    },
-    {
-      id: 6,
-      name: 'Indian Institute of Technology Bombay',
-      shortName: 'IIT Bombay',
-      location: 'Mumbai',
-      state: 'Maharashtra',
-      rating: 4.8,
-      reviews: 2156,
-      type: 'Public',
-      category: 'Engineering',
-      established: 1958,
-      fees: '₹2.5 Lakhs',
-      placement: '₹27 LPA',
-      ranking: 3,
-      featured: true,
-      courses: 45,
-      students: 9000,
-      image: '/api/placeholder/400/300'
-    }
-  ];
+
+  // Reset to page 1 when filters change (separate effect)
+  useEffect(() => {
+    setPage(1);
+    setColleges([]);
+    setTotalColleges(0);
+  }, [searchQuery, selectedState, selectedType, selectedCategory, sortBy, limit]);
+
+  // Fetch colleges when page or filters change
+  useEffect(() => {
+    const fetchColleges = async () => {
+      const isFirstPage = page === 1;
+      try {
+        if (isFirstPage) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
+        setError(null);
+
+        const filters = {
+          search: searchQuery,
+          state: selectedState,
+          type: selectedType,
+          category: selectedCategory,
+          sortBy: sortBy as 'ranking' | 'rating' | 'fees' | 'placement',
+          page: page,
+          limit: limit,
+        };
+
+        const response = await collegeService.getColleges(filters);
+        
+        if (response.success) {
+          const list = response.data.colleges;
+          const total = response.data.total;
+
+          // Replace on first page, append on subsequent pages
+          setColleges(prev => (isFirstPage ? list : [...prev, ...list]));
+          setTotalColleges(total);
+        } else {
+          setError(response.message || 'Failed to fetch colleges');
+          if (!isFirstPage) setPage(p => Math.max(1, p - 1));
+        }
+      } catch (err) {
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
+        if (!isFirstPage) setPage(p => Math.max(1, p - 1));
+        console.error('Error fetching colleges:', err);
+      } finally {
+        if (isFirstPage) setLoading(false);
+        else setLoadingMore(false);
+      }
+    };
+
+    fetchColleges();
+  }, [page, searchQuery, selectedState, selectedType, selectedCategory, sortBy, limit]);
 
   const states = ['All States', 'Delhi', 'Maharashtra', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'West Bengal', 'Uttar Pradesh'];
   const types = ['All Types', 'Public', 'Private', 'Deemed'];
@@ -141,30 +91,8 @@ const CollegesPage = () => {
     { value: 'placement', label: 'Placement Package' }
   ];
 
-  const filteredColleges = colleges.filter(college => {
-    const matchesSearch = college.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         college.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesState = !selectedState || selectedState === 'All States' || college.state === selectedState;
-    const matchesType = !selectedType || selectedType === 'All Types' || college.type === selectedType;
-    const matchesCategory = !selectedCategory || selectedCategory === 'All Categories' || college.category === selectedCategory;
-    
-    return matchesSearch && matchesState && matchesType && matchesCategory;
-  });
-
-  const sortedColleges = [...filteredColleges].sort((a, b) => {
-    switch (sortBy) {
-      case 'ranking':
-        return a.ranking - b.ranking;
-      case 'rating':
-        return b.rating - a.rating;
-      case 'fees':
-        return parseFloat(a.fees.replace(/[₹,Lakhs]/g, '')) - parseFloat(b.fees.replace(/[₹,Lakhs]/g, ''));
-      case 'placement':
-        return parseFloat(b.placement.replace(/[₹,LPA]/g, '')) - parseFloat(a.placement.replace(/[₹,LPA]/g, ''));
-      default:
-        return 0;
-    }
-  });
+  // Since filtering and sorting is done by the API, we just use the colleges as is
+  const sortedColleges = colleges;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -172,12 +100,10 @@ const CollegesPage = () => {
       <div className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
+              <div>
               <h1 className="text-3xl font-bold text-gray-800">Find Your Dream College</h1>
-              <p className="text-gray-600 mt-1">Explore {colleges.length.toLocaleString()}+ colleges across India</p>
-            </div>
-            
-            {/* Search Bar */}
+              <p className="text-gray-600 mt-1">Explore {totalColleges.toLocaleString()}+ colleges across India</p>
+            </div>            {/* Search Bar */}
             <div className="flex-1 max-w-2xl">
               <div className="relative">
                 <input
@@ -281,7 +207,7 @@ const CollegesPage = () => {
                   <span>Filters</span>
                 </button>
                 <p className="text-gray-600">
-                  Showing {sortedColleges.length} of {colleges.length} colleges
+                  {loading ? 'Loading...' : `Showing ${sortedColleges.length} of ${totalColleges} colleges`}
                 </p>
               </div>
 
@@ -315,9 +241,50 @@ const CollegesPage = () => {
               </div>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                <p className="text-red-800 font-semibold mb-2">Error loading colleges</p>
+                <p className="text-red-600 text-sm">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-4 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!loading && !error && sortedColleges.length === 0 && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
+                <p className="text-gray-600 text-lg mb-2">No colleges found</p>
+                <p className="text-gray-500 text-sm mb-4">Try adjusting your filters or search query</p>
+                <button
+                  onClick={() => {
+                    setSelectedState('');
+                    setSelectedType('');
+                    setSelectedCategory('');
+                    setSearchQuery('');
+                  }}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            )}
+
             {/* Colleges Grid/List */}
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-4'}>
-              {sortedColleges.map((college) => (
+            {!loading && !error && sortedColleges.length > 0 && (
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-4'}>
+                {sortedColleges.map((college) => (
                 <div key={college.id} className={`bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden ${viewMode === 'list' ? 'flex' : ''}`}>
                   {/* College Image/Header */}
                   <div className={`${viewMode === 'list' ? 'w-64 flex-shrink-0' : 'h-48'} relative bg-gradient-to-r from-blue-500 to-purple-600`}>
@@ -400,14 +367,29 @@ const CollegesPage = () => {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Load More */}
-            {sortedColleges.length === colleges.length && (
+            {!loading && !error && sortedColleges.length < totalColleges && (
               <div className="text-center mt-12">
-                <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                  Load More Colleges
+                <p className="text-gray-600 mb-4">
+                  Showing {sortedColleges.length} of {totalColleges} colleges
+                </p>
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={loadingMore}
+                  className={`bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors ${loadingMore ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+                >
+                  {loadingMore ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin inline mr-2" />
+                      Loading...
+                    </>
+                  ) : (
+                    'Load More Colleges'
+                  )}
                 </button>
               </div>
             )}
