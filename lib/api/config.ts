@@ -13,9 +13,9 @@ export const apiConfig = {
 export const endpoints = {
   colleges: {
     list: 'api/v1/colleges',
-    detail: (id: number | string) => `/v1/colleges/${id}`,
-    search: '/v1/colleges/search',
-    filter: '/v1/colleges/filter',
+    detail: (id: number | string) => `api/v1/colleges/${id}`,
+    search: 'api/v1/colleges/search',
+    filter: 'api/v1/colleges/filters',
   },
   exams: {
     list: '/v1/exams',

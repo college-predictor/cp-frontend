@@ -48,6 +48,12 @@ export interface CollegeListResponse {
   size: number;
 }
 
+export interface FilterOptions {
+  states?: string[];
+  types?: string[];
+  categories?: string[];
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;

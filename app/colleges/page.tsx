@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Filter, MapPin, Star, Users, TrendingUp, SortAsc, Grid, List, Loader2 } from 'lucide-react';
-import { collegeService, College, ApiError } from '@/lib/api';
+import { collegeService, College, ApiError, FilterOptions } from '@/lib/api';
 
 const CollegesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,7 +20,30 @@ const CollegesPage = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [states, setStates] = useState<string[]>(['All States']);
+  const [categories, setCategories] = useState<string[]>(['All Categories']);
 
+  // Fetch states and categories on mount
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        const filters = await collegeService.getFilterOptions();
+        if (filters.success) {
+          if (filters.data?.states && filters.data.states.length > 0) {
+            setStates(['All States', ...filters.data.states]);
+          }
+          if (filters.data?.categories && filters.data.categories.length > 0) {
+            setCategories(['All Categories', ...filters.data.categories]);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching filter options:', err);
+        // Keep default values on error
+      }
+    };
+
+    fetchFilters();
+  }, []);
 
   // Reset to page 1 when filters change (separate effect)
   useEffect(() => {
@@ -81,9 +104,9 @@ const CollegesPage = () => {
     fetchColleges();
   }, [page, searchQuery, selectedState, selectedType, selectedCategory, sortBy, limit]);
 
-  const states = ['All States', 'Delhi', 'Maharashtra', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'West Bengal', 'Uttar Pradesh'];
-  const types = ['All Types', 'Public', 'Private', 'Deemed'];
-  const categories = ['All Categories', 'Engineering', 'Medical', 'Management', 'Arts & Science', 'Science & Research', 'Law'];
+  // const states = ['All States', 'Delhi', 'Maharashtra', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'West Bengal', 'Uttar Pradesh'];
+  // const categories = ['All Categories', 'Engineering', 'Medical', 'Management', 'Arts & Science', 'Science & Research', 'Law'];
+  const types = ['All Types', 'Public', 'Private'];
   const sortOptions = [
     { value: 'ranking', label: 'Ranking' },
     { value: 'rating', label: 'Rating' },

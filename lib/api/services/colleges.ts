@@ -1,7 +1,7 @@
 // College API Service
 import { apiClient } from '../client';
 import { endpoints } from '../config';
-import type { College, CollegeFilters, ApiResponse, PaginatedResponse, CollegeListResponse } from '../types';
+import type { College, CollegeFilters, ApiResponse, PaginatedResponse, CollegeListResponse, FilterOptions } from '../types';
 
 
 export const collegeService = {
@@ -49,6 +49,10 @@ export const collegeService = {
       params: { featured: true }
     });
   },
+
+  async getFilterOptions(): Promise<ApiResponse<FilterOptions>> {
+    return apiClient.get<ApiResponse<FilterOptions>>(endpoints.colleges.filter);
+  }
 };
 
 export default collegeService;
