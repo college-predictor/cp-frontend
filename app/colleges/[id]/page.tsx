@@ -325,642 +325,660 @@ const CollegePage = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   // Mock data - In a real app, this would be fetched from an API
-  useEffect(() => {
-    // Simulate API call
-    const mockCollegeData: CollegeData = {
-      id: parseInt(params.id as string),
-      name: 'Indian Institute of Technology Delhi',
-      shortName: 'IIT Delhi',
-      established: 1961,
-      type: 'Public',
-      category: 'Engineering',
-      location: {
-        address: 'Hauz Khas, New Delhi',
-        city: 'New Delhi',
-        state: 'Delhi',
-        pincode: '110016',
-        coordinates: { lat: 28.5449, lng: 77.1929 }
-      },
-      contact: {
-        phone: ['+91-11-2659-1999', '+91-11-2659-1000'],
-        email: ['info@iitd.ac.in', 'admissions@iitd.ac.in'],
-        website: 'https://www.iitd.ac.in',
-        admissionHelpline: '+91-11-2659-1945'
-      },
-      ratings: {
-        overall: 4.8,
-        academics: 4.9,
-        infrastructure: 4.7,
-        faculty: 4.8,
-        placement: 4.9,
-        hostelLife: 4.5,
-        socialLife: 4.6,
-        totalReviews: 2453
-      },
-      fees: {
-        tuition: '₹2,50,000',
-        hostel: '₹25,000',
-        other: '₹15,000',
-        total: '₹2,90,000'
-      },
-      placement: {
-        averagePackage: '₹25 LPA',
-        highestPackage: '₹2.1 Cr',
-        placementRate: 95,
-        medianPackage: '₹23 LPA',
-        topRecruiters: ['Google', 'Microsoft', 'Amazon', 'Goldman Sachs', 'McKinsey', 'Flipkart'],
-        internationalOffers: 32,
-        salaryTrends: [
-          { year: 2024, average: '₹25 LPA', highest: '₹2.1 Cr', placementRate: 95 },
-          { year: 2023, average: '₹24 LPA', highest: '₹1.8 Cr', placementRate: 94 },
-          { year: 2022, average: '₹22 LPA', highest: '₹1.6 Cr', placementRate: 92 },
-          { year: 2021, average: '₹20 LPA', highest: '₹1.4 Cr', placementRate: 90 }
-        ],
-        sectorDistribution: [
-          { sector: 'Technology & Product', percentage: 42 },
-          { sector: 'Consulting & Strategy', percentage: 21 },
-          { sector: 'Finance & Analytics', percentage: 16 },
-          { sector: 'Core Engineering', percentage: 14 },
-          { sector: 'Research & Higher Studies', percentage: 7 }
-        ],
-        internshipStats: {
-          totalInternships: 780,
-          ppoRate: 68,
-          globalInternships: 94,
-          averageStipend: '₹1.5 LPM'
-        },
-        placementProcess: [
-          'Pre-placement talks and company registrations open in August.',
-          'Students shortlist companies and submit resumes for profile-based shortlisting.',
-          'Aptitude tests, group discussions, and technical interviews run from November.',
-          'Final placement interviews are conducted in multiple slots through December and January.'
-        ],
-        successStories: [
-          {
-            name: 'Ishaan Malhotra',
-            company: 'Google Mountain View',
-            package: '$265K',
-            role: 'Software Engineer',
-            story:
-              'Secured a role through the international placement drive after leading projects at the Analytics Club and winning the ACM ICPC regionals.'
-          },
-          {
-            name: 'Megha Rao',
-            company: 'McKinsey & Company',
-            package: '₹42 LPA',
-            role: 'Business Analyst',
-            story:
-              'Converted a pre-placement offer following a summer internship where she co-authored a digital transformation roadmap for a Fortune 100 client.'
-          }
-        ],
-        branchwise: [
-          {
-            name: 'Computer Science & Engineering',
-            averagePackage: '₹32 LPA',
-            medianPackage: '₹29 LPA',
-            highestPackage: '₹2.1 Cr',
-            placementRate: 99,
-            offers: 210,
-            topRoles: ['Software Engineer', 'AI/ML Engineer', 'Product Manager'],
-            recruiters: ['Google', 'Microsoft', 'Apple', 'LinkedIn']
-          },
-          {
-            name: 'Electrical Engineering',
-            averagePackage: '₹24 LPA',
-            medianPackage: '₹22 LPA',
-            highestPackage: '₹78 LPA',
-            placementRate: 96,
-            offers: 185,
-            topRoles: ['Hardware Engineer', 'Energy Consultant', 'Analog Design Engineer'],
-            recruiters: ['Texas Instruments', 'Qualcomm', 'Samsung', 'GE']
-          },
-          {
-            name: 'Mechanical Engineering',
-            averagePackage: '₹18 LPA',
-            medianPackage: '₹16 LPA',
-            highestPackage: '₹52 LPA',
-            placementRate: 93,
-            offers: 160,
-            topRoles: ['Manufacturing Engineer', 'Automotive R&D Engineer', 'Supply Chain Analyst'],
-            recruiters: ['Bosch', 'Mahindra', 'Rolls-Royce', 'Tata Motors']
-          },
-          {
-            name: 'Mathematics & Computing',
-            averagePackage: '₹28 LPA',
-            medianPackage: '₹25 LPA',
-            highestPackage: '₹1.2 Cr',
-            placementRate: 98,
-            offers: 140,
-            topRoles: ['Quant Analyst', 'Data Scientist', 'Risk Strategist'],
-            recruiters: ['Goldman Sachs', 'JP Morgan', 'Morgan Stanley', 'DE Shaw']
-          },
-          {
-            name: 'Chemical Engineering',
-            averagePackage: '₹16 LPA',
-            medianPackage: '₹14 LPA',
-            highestPackage: '₹39 LPA',
-            placementRate: 91,
-            offers: 120,
-            topRoles: ['Process Engineer', 'Sustainability Consultant', 'R&D Scientist'],
-            recruiters: ['ExxonMobil', 'Shell', 'ITC', 'Honeywell']
-          }
-        ]
-      },
-      admissions: {
-        applicationProcess:
-          'Admissions at IIT Delhi follow national-level entrance examinations with centralized counselling and institute-level verification.',
-        steps: [
-          'Qualify JEE Main and appear for JEE Advanced with a competitive All India Rank.',
-          'Register for the Joint Seat Allocation Authority (JoSAA) counselling and complete choice filling.',
-          'Lock preferred branches during the counselling window and await seat allotment results.',
-          'Report to IIT Delhi for document verification, fee payment, and orientation formalities.'
-        ],
-        importantDates: [
-          { event: 'JEE Main Session 1', startDate: '2023-01-24', endDate: '2023-02-01', status: 'Closed' },
-          { event: 'JEE Advanced Examination', startDate: '2023-06-04', endDate: '2023-06-04', status: 'Closed' },
-          { event: 'JoSAA Counselling', startDate: '2023-06-19', endDate: '2023-07-31', status: 'Closed' },
-          { event: 'Institute Reporting', startDate: '2023-08-10', endDate: '2023-08-15', status: 'Ongoing' },
-          { event: 'Orientation & Induction', startDate: '2023-08-20', endDate: '2023-08-25', status: 'Upcoming' }
-        ],
-        eligibility: [
-          {
-            program: 'B.Tech Programmes',
-            criteria: [
-              'Minimum 75% marks in Class XII (65% for SC/ST candidates).',
-              'Mandatory subjects: Physics, Chemistry, Mathematics.',
-              'Valid JEE Advanced rank within the opening and closing ranges announced by JoSAA.'
-            ]
-          },
-          {
-            program: 'M.Tech Programmes',
-            criteria: [
-              'Bachelor’s degree in relevant discipline with at least 60% aggregate.',
-              'Valid GATE score meeting the departmental cut-off.',
-              'Departmental interview for certain specialisations.'
-            ]
-          },
-          {
-            program: 'MBA Programmes',
-            criteria: [
-              'Bachelor’s degree with minimum 60% aggregate.',
-              'Competitive CAT percentile (98+ recommended).',
-              'Personal interview and writing ability test conducted by DMS, IIT Delhi.'
-            ]
-          }
-        ],
-        requiredExams: [
-          { name: 'JEE Advanced', score: 'AIR within top 5000', weightage: '60%' },
-          { name: 'Class XII Board Exams', score: 'Minimum 75% aggregate', weightage: '10%' },
-          { name: 'JoSAA Counselling', score: 'Seat allotment & document verification', weightage: '30%' }
-        ],
-        documents: [
-          'JEE Advanced admit card and rank card',
-          'Class X and XII mark sheets and passing certificates',
-          'Category, PwD, or EWS certificate (if applicable)',
-          'Passport-sized colour photographs',
-          'Government-issued photo ID and proof of address'
-        ],
-        faqs: [
-          {
-            question: 'Is there any relaxation for reserved categories?',
-            answer:
-              'IIT Delhi follows the Government of India reservation policy with relaxed cut-offs, fee concessions, and preparatory courses for eligible categories.'
-          },
-          {
-            question: 'Can international students apply?',
-            answer:
-              'International candidates can apply through the DASA scheme, ICCR scholarships, or specific MoUs that IIT Delhi maintains with partner institutions.'
-          }
-        ]
-      },
-      academics: {
-        courses: {
-          undergraduate: ['B.Tech Computer Science', 'B.Tech Mechanical', 'B.Tech Electrical', 'B.Tech Civil'],
-          postgraduate: ['M.Tech', 'MBA', 'M.Sc', 'M.Des'],
-          phd: ['Ph.D in Engineering', 'Ph.D in Science', 'Ph.D in Management']
-        },
-        departments: [
-          {
-            name: 'Computer Science & Engineering',
-            summary: 'Advanced computing, artificial intelligence, and scalable systems research with strong industry partnerships.',
-            strengths: ['AI & ML Centers', 'High Performance Computing Lab', 'Startup Incubation Support'],
-            undergraduateCourses: ['B.Tech Computer Science and Engineering', 'Dual Degree (B.Tech + M.Tech) Computer Science'],
-            postgraduateCourses: ['M.Tech Computer Science & Engineering', 'M.S.(R) Computer Science'],
-            phdCourses: ['Ph.D Computer Science & Engineering']
-          },
-          {
-            name: 'Electrical Engineering',
-            summary: 'Power systems, microelectronics, and communications programs with modern laboratories and national projects.',
-            strengths: ['VLSI & Nanoelectronics Lab', 'Smart Grid Research', '5G & IoT Testbeds'],
-            undergraduateCourses: ['B.Tech Electrical Engineering', 'B.Tech Engineering Physics'],
-            postgraduateCourses: ['M.Tech Power Electronics', 'M.Tech Communications Engineering'],
-            phdCourses: ['Ph.D Electrical Engineering']
-          },
-          {
-            name: 'Mechanical Engineering',
-            summary: 'Focus on design, manufacturing, thermal sciences, and robotics with extensive cross-disciplinary collaborations.',
-            strengths: ['Robotics & Automation Center', 'Advanced Manufacturing Lab', 'Thermal Systems Research'],
-            undergraduateCourses: ['B.Tech Mechanical Engineering', 'B.Tech Production & Industrial Engineering'],
-            postgraduateCourses: ['M.Tech Design Engineering', 'M.Tech Thermal Engineering'],
-            phdCourses: ['Ph.D Mechanical Engineering']
-          },
-          {
-            name: 'Civil Engineering',
-            summary: 'Sustainable infrastructure, transportation, and water resources engineering projects impacting smart city initiatives.',
-            strengths: ['Structural Dynamics Lab', 'Smart Cities Mission Projects', 'Geospatial Research Hub'],
-            undergraduateCourses: ['B.Tech Civil Engineering'],
-            postgraduateCourses: ['M.Tech Structural Engineering', 'M.Tech Transportation Engineering'],
-            phdCourses: ['Ph.D Civil Engineering']
-          },
-          {
-            name: 'Chemical Engineering',
-            summary: 'Bridges fundamental sciences with industrial processes, sustainability goals, and new materials development.',
-            strengths: ['Renewable Energy Processes', 'Process Simulation Suite', 'Materials Innovation Center'],
-            undergraduateCourses: ['B.Tech Chemical Engineering'],
-            postgraduateCourses: ['M.Tech Process Engineering', 'M.Tech Polymer Science & Technology'],
-            phdCourses: ['Ph.D Chemical Engineering']
-          },
-          {
-            name: 'Aerospace Engineering',
-            summary: 'Aerodynamics, propulsion, avionics, and space technologies supported by world-class testing facilities.',
-            strengths: ['Wind Tunnel Facility', 'UAV & Space Systems Lab', 'ISRO & DRDO Projects'],
-            undergraduateCourses: ['B.Tech Aerospace Engineering'],
-            postgraduateCourses: ['M.Tech Aerodynamics & Propulsion', 'M.Tech Flight Mechanics & Control'],
-            phdCourses: ['Ph.D Aerospace Engineering']
-          }
-        ],
-        facultyCount: 450,
-        studentFacultyRatio: '1:8'
-      },
-      infrastructure: {
-        overview:
-          'IIT Delhi’s 325-acre smart campus blends academic rigor with collaborative spaces, innovation districts, and student-centric amenities designed to support round-the-clock learning and community life.',
-        keyHighlights: [
-          'Integrated academic, hostel, and recreational zones within a 10-minute walk',
-          '24/7 digitized access to libraries, labs, and collaborative studios',
-          'IoT-enabled sustainability initiatives cutting emissions by 35%'
-        ],
-        campus: {
-          area: '325 acres',
-          buildings: 45,
-          labs: 120,
-          libraries: 6
-        },
-        facilities: ['Wi-Fi Campus', 'Sports Complex', 'Medical Center', 'Cafeterias', 'Bank', 'Post Office'],
-        hostel: {
-          capacity: 8000,
-          rooms: 'Single & Double',
-          facilities: ['Wi-Fi', 'Mess', 'Common Room', 'Gym', 'Laundry']
-        },
-        innovationCenters: [
-          {
-            name: 'Technology Business Incubator',
-            focus: 'Startup acceleration & seed funding support',
-            description: 'Provides co-working space, mentorship, and investor connects for student-led ventures.',
-            link: 'https://tbi.iitd.ac.in'
-          },
-          {
-            name: 'Centre for AI & Robotics',
-            focus: 'Artificial Intelligence & Autonomous Systems',
-            description: 'Houses advanced computing clusters, robotics labs, and industry-sponsored research pods.',
-            link: 'https://cair.iitd.ac.in'
-          },
-          {
-            name: 'Sustainable Energy Lab',
-            focus: 'Renewable energy & climate tech',
-            description: 'Dedicated facility for solar, wind, and energy storage research in partnership with global energy players.',
-            link: 'https://sustenergy.iitd.ac.in'
-          }
-        ],
-        digitalInfrastructure: [
-          '10 Gbps backbone network with campus-wide Wi-Fi 6 coverage',
-          'Smart classrooms equipped with AR/VR pods and lecture capture systems',
-          'AI-enabled library discovery system with 24/7 digital access',
-          'Student super-app consolidating attendance, courseware, and campus services'
-        ],
-        sustainabilityInitiatives: [
-          {
-            title: 'Net-Zero by 2030 Roadmap',
-            impact: 'Current campus emissions already reduced by 35% via solar rooftops and smart metering.'
-          },
-          {
-            title: 'Water Positive Campus',
-            impact: 'Rainwater harvesting, greywater recycling, and AI-monitored usage save 18 million litres annually.'
-          },
-          {
-            title: 'Zero-Waste Hostels',
-            impact: 'Segregated waste streams with biogas plants powering hostel kitchens.'
-          }
-        ],
-        transport: [
-          { mode: 'EV Shuttle Network', frequency: 'Runs every 7 minutes covering all hostels and departments' },
-          { mode: 'City Bus Interchange', frequency: 'Dedicated DTC services at campus gate during peak hours' },
-          { mode: 'Cycling Infrastructure', frequency: '700+ shared bicycles with docking stations across campus' }
-        ]
-      },
-      socialMedia: {
-        official: {
-          facebook: 'https://facebook.com/iitdelhi',
-          twitter: 'https://twitter.com/iitdelhi',
-          instagram: 'https://instagram.com/iitdelhi',
-          youtube: 'https://youtube.com/iitdelhi',
-          linkedin: 'https://linkedin.com/school/iitdelhi'
-        }
-      },
-      reviews: {
-        highlights: [
-          'Faculty actively encourage interdisciplinary research and innovation.',
-          'Robust alumni mentorship ensures industry exposure and networking.',
-          'Student bodies run over 200 clubs that keep the campus vibrant year-round.'
-        ],
-        distribution: [
-          { label: 'Academics', value: 96 },
-          { label: 'Placements', value: 94 },
-          { label: 'Infrastructure', value: 91 },
-          { label: 'Campus Life', value: 89 },
-          { label: 'Value for Money', value: 88 }
-        ],
-        testimonials: [
-          {
-            name: 'Ananya Verma',
-            program: 'B.Tech Computer Science',
-            batch: 'Class of 2025',
-            content:
-              'The curriculum is rigorous but the ecosystem pushes you to innovate. Access to labs and mentorship helped me co-found a startup in my second year.',
-            rating: 5
-          },
-          {
-            name: 'Rahul Mehta',
-            program: 'MBA',
-            batch: 'Class of 2023',
-            content:
-              'Industry projects, leadership labs, and the peer group at DMS IIT Delhi prepared me for consulting roles with top firms.',
-            rating: 4
-          },
-          {
-            name: 'Sneha Kulkarni',
-            program: 'M.Tech Mechanical Engineering',
-            batch: 'Class of 2024',
-            content:
-              'International collaborations and fully-equipped research centres made it easy to pursue cutting-edge work in sustainable manufacturing.',
-            rating: 5
-          }
-        ]
-      },
-      images: {
-        campus: ['/api/placeholder/800/600', '/api/placeholder/800/600', '/api/placeholder/800/600'],
-        hostel: ['/api/placeholder/800/600', '/api/placeholder/800/600'],
-        facilities: ['/api/placeholder/800/600', '/api/placeholder/800/600', '/api/placeholder/800/600'],
-        events: ['/api/placeholder/800/600', '/api/placeholder/800/600']
-      },
-      campusExperience: {
-        lifestyleHighlights: [
-          {
-            title: 'Interdisciplinary Learning Pods',
-            description: 'Evenings see cross-disciplinary teams collaborating on hackathons, design jams, and policy labs.'
-          },
-          {
-            title: 'Vibrant Cultural Calendar',
-            description: 'From open mic nights to classical concerts, multiple student societies host performances every week.'
-          },
-          {
-            title: 'Nightlife that Nurtures',
-            description: '24/7 reading rooms, late-night cafes, and safe mobility ensure productivity beyond classroom hours.'
-          }
-        ],
-        dailyTimeline: [
-          { time: '06:30', activity: 'Joggers, cyclists, and sports teams take over the athletics track and fitness trails.' },
-          { time: '09:00', activity: 'Core lectures and lab sessions kick off across departments with blended learning setups.' },
-          { time: '13:00', activity: 'Hostel messes and food courts serve regional cuisines alongside healthy salad bars.' },
-          { time: '17:30', activity: 'Clubs meet for rehearsals, coding sprints, debating leagues, and social impact initiatives.' },
-          { time: '22:00', activity: 'Study lounges, maker spaces, and the central library remain abuzz with collaborative projects.' }
-        ],
-        supportServices: [
-          {
-            name: 'Career Development Cell',
-            description: 'Resume clinics, mock interviews, and sector-specific mentoring led by alumni and industry experts.'
-          },
-          {
-            name: 'Student Wellbeing Office',
-            description: 'On-call counsellors, wellness workshops, and mental health first-aiders deployed hostel-wise.'
-          },
-          {
-            name: 'Academic Success Studio',
-            description: 'Peer-assisted learning modules, writing labs, and analytics-backed course planning support.'
-          }
-        ],
-        diningOptions: [
-          { name: 'Himalayan Hub', type: 'Multi-cuisine Food Court', signature: 'Pan-Asian live counters & organic salad bar', openTill: '01:00 AM' },
-          { name: 'Nilgiri Mess', type: 'Hostel Dining', signature: 'Local farm-to-table menu with weekly millet specials', openTill: '10:00 PM' },
-          { name: 'The Innovation Café', type: 'Grab-n-Go & Specialty Coffee', signature: 'Nitro brews, protein bowls, keto-friendly snacks', openTill: '02:00 AM' }
-        ],
-        sportsAndFitness: [
-          { name: 'Olympic-size Aquatic Complex', details: 'Heated pool with underwater cameras and FINA-compliant lanes.' },
-          { name: 'High-Performance Gym', details: 'Strength & conditioning arena with wearable tech tracking and physiotherapy suite.' },
-          { name: 'Multi-sport Indoor Arena', details: 'Badminton, squash, climbing wall, and esports lab under one roof.' }
-        ],
-        wellnessPrograms: [
-          { name: 'Mindful Mondays', description: 'Guided meditation and breathwork sessions facilitated by certified practitioners.' },
-          { name: 'Fit@IITD', description: 'Campus-wide step challenges, sports leagues, and personalised fitness coaching.' },
-          { name: 'Thrive Circles', description: 'Peer-led support groups discussing academic resilience and work-life balance.' }
-        ]
-      },
-      alumniNetwork: {
-        totalAlumni: 50000,
-        notableAlumni: [
-          { name: 'Sundar Pichai', position: 'CEO', company: 'Google', image: '/api/placeholder/100/100' },
-          { name: 'Vinod Khosla', position: 'Co-founder', company: 'Sun Microsystems', image: '/api/placeholder/100/100' },
-          { name: 'Rajat Gupta', position: 'Former MD', company: 'McKinsey', image: '/api/placeholder/100/100' }
-        ]
-      },
-      clubs: [
-        {
-          name: 'Robotics Club',
-          description: 'Designs autonomous systems, humanoids, and swarm robotics while mentoring school outreach teams.',
-          achievements: [
-            'ABU Robocon India 2024 champions with three innovation laurels',
-            'Published two IEEE papers on modular swarm navigation in 2023'
-          ],
-          contactEmail: 'robotics.club@iitd.ac.in',
-          social: {
-            instagram: 'https://www.instagram.com/iitdrobotics/',
-            youtube: 'https://www.youtube.com/@iitdrobotics',
-            discord: 'https://discord.gg/robotics-iitd',
-            website: 'https://robotics.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/0uaquGZKx_0'
-        },
-        {
-          name: 'Coding Club',
-          description: 'Competitive programming, open-source cohorts, and hackathons powering the institute tech community.',
-          achievements: [
-            'Ranked #2 globally in ICPC 2024 Asia-West regionals',
-            'Maintains 40+ open-source repositories adopted by startups'
-          ],
-          contactEmail: 'coding.club@iitd.ac.in',
-          social: {
-            twitter: 'https://twitter.com/iitdcoding',
-            linkedin: 'https://www.linkedin.com/company/iitd-coding-club/',
-            website: 'https://codingclub.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/PkZNo7MFNFg'
-        },
-        {
-          name: 'Entrepreneurship & Leadership Cell',
-          description: 'Startup accelerator, mentorship network, and angel connect platform run by student founders.',
-          achievements: [
-            'Incubated 22 funded startups in the last three cohorts',
-            'Hosted Asia’s largest campus investor day with 180 VCs'
-          ],
-          contactEmail: 'els.iitd@iitd.ac.in',
-          social: {
-            instagram: 'https://www.instagram.com/iitd_elc/',
-            linkedin: 'https://www.linkedin.com/company/iitd-entrepreneurship-cell/',
-            facebook: 'https://www.facebook.com/iitdelhi.ecell',
-            website: 'https://ecell.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/t6fdJ5N0X9Q'
-        },
-        {
-          name: 'Music Society (MeLa)',
-          description: 'Choirs, bands, and producers collaborating on fusions, EDM, and classical showcases.',
-          achievements: [
-            'Released “Raaga Reloaded” EP featuring 15 campus artists',
-            'Winners of Mood Indigo “Battle of Bands” 2023'
-          ],
-          contactEmail: 'music.society@iitd.ac.in',
-          social: {
-            instagram: 'https://www.instagram.com/mela_iitd/',
-            youtube: 'https://www.youtube.com/channel/UCMeLaSessions',
-            website: 'https://mela.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/7NOSDKb0HlU'
-        },
-        {
-          name: 'Lenscraft Collective',
-          description: 'Photography and film-making storytellers documenting campus, culture, and research breakthroughs.',
-          achievements: [
-            'Curated India’s first student-run XR photo festival',
-            'Official photography partner for 30+ national events'
-          ],
-          contactEmail: 'lenscraft@iitd.ac.in',
-          social: {
-            instagram: 'https://www.instagram.com/iitd_lenscraft/',
-            youtube: 'https://www.youtube.com/@lenscraftfilms',
-            website: 'https://lenscraft.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/1La4QzGeaaQ'
-        },
-        {
-          name: 'Stagecraft Society',
-          description: 'Theatre troupe producing dramas, improv, and street plays on social impact narratives.',
-          achievements: [
-            'Best script & ensemble at IIT Bombay’s StageFest 2024',
-            'Styled 12-city street play tour on sustainability awareness'
-          ],
-          contactEmail: 'stagecraft@iitd.ac.in',
-          social: {
-            facebook: 'https://www.facebook.com/stagecraftiitd',
-            instagram: 'https://www.instagram.com/stagecraft_iitd/',
-            youtube: 'https://www.youtube.com/@stagecraftplays'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/JXh1Gd2N4Vg'
-        }
-      ],
-      events: [
-        {
-          name: 'Rendezvous',
-          type: 'Cultural Fest',
-          description: 'Four-day celebration with concerts, workshops, and 180+ competitions attracting 120K+ attendees.',
-          date: '2024-03-15',
-          image: '/api/placeholder/400/300',
-          location: 'Main Campus • Open Air Theatre & Cultural Blocks',
-          registrationLink: 'https://rendezvous.iitd.ac.in/register',
-          highlights: [
-            'Headliner nights featuring global indie and fusion artists',
-            'Experiential villages, creator meetups, and interactive art trails',
-            'Flagship competitions: Blitzkrieg, Stage Play, Campus Princess'
-          ],
-          social: {
-            instagram: 'https://www.instagram.com/rendezvousiitd/',
-            youtube: 'https://www.youtube.com/@rendezvousiitd',
-            facebook: 'https://www.facebook.com/rendezvousiitd',
-            website: 'https://rendezvous.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/0uaquGZKx_0'
-        },
-        {
-          name: 'Tryst',
-          type: 'Tech Fest',
-          description: 'National technology conclave with keynote speakers, makeathons, and industry showcases.',
-          date: '2024-02-20',
-          image: '/api/placeholder/400/300',
-          location: 'Convention Centre & Research Park',
-          registrationLink: 'https://tryst.iitd.ac.in/register',
-          highlights: [
-            '48-hour flagship hackathon with $25K prize pool',
-            'Hands-on labs in AI, quantum, space tech, and climate action',
-            'Deep-tech expo co-hosted with 35 research labs and unicorns'
-          ],
-          social: {
-            twitter: 'https://twitter.com/trystiitd',
-            linkedin: 'https://www.linkedin.com/company/tryst-iit-delhi/',
-            youtube: 'https://www.youtube.com/@trystiitdelhi',
-            website: 'https://tryst.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/wX78iKhInsc'
-        },
-        {
-          name: 'E-Summit',
-          type: 'Startup Summit',
-          description: 'Entrepreneurship summit uniting founders, investors, and policymakers for curated masterclasses.',
-          date: '2024-09-05',
-          image: '/api/placeholder/400/300',
-          location: 'Technology Business Incubator & Lecture Hall Complex',
-          registrationLink: 'https://esummit.iitd.ac.in/register',
-          highlights: [
-            'Reverse pitch arena with 60+ venture funds',
-            'Founder fireside chats with unicorn leaders and alumni',
-            'Micro accelerator demo day featuring 15 campus startups'
-          ],
-          social: {
-            instagram: 'https://www.instagram.com/esummitiitd/',
-            linkedin: 'https://www.linkedin.com/company/iitd-esummit/',
-            website: 'https://esummit.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/t6fdJ5N0X9Q'
-        }
-      ],
-      scholarships: [
-        { name: 'Merit Scholarship', amount: '₹50,000', eligibility: 'Top 10%', description: 'For meritorious students' },
-        { name: 'Need-based Aid', amount: '₹1,00,000', eligibility: 'Family income < 5 LPA', description: 'Financial assistance' }
-      ],
-      nearbyPlaces: [
-        { name: 'Green Park Metro', distance: '2 km', type: 'Transport' },
-        { name: 'Deer Park', distance: '1 km', type: 'Recreation' },
-        { name: 'INA Market', distance: '3 km', type: 'Shopping' }
-      ],
-      news: [
-        { title: 'IIT Delhi ranks #1 in engineering', date: '2024-01-15', category: 'Rankings', excerpt: 'Latest NIRF rankings released', image: '/api/placeholder/300/200' },
-        { title: 'New AI research center inaugurated', date: '2024-01-10', category: 'Research', excerpt: 'State-of-the-art facility opened', image: '/api/placeholder/300/200' }
-      ],
-      startups: [
-        { name: 'Zomato', founder: 'Deepinder Goyal', description: 'Food delivery platform', funding: '$2B+', image: '/api/placeholder/200/150' },
-        { name: 'Paytm', founder: 'Vijay Shekhar Sharma', description: 'Digital payments', funding: '$3B+', image: '/api/placeholder/200/150' }
-      ],
-      funding: {
-        totalFunding: '₹500 Cr',
-        sources: ['Government of India', 'Private Donations', 'Research Grants'],
-        recentGrants: [
-          { amount: '₹50 Cr', source: 'MHRD', purpose: 'Infrastructure Development', year: 2024 },
-          { amount: '₹25 Cr', source: 'DST', purpose: 'Research Projects', year: 2023 }
-        ]
-      }
-    };
+  // useEffect(() => {
+  //   // Simulate API call
+  //   const mockCollegeData: CollegeData = {
+  //     id: parseInt(params.id as string),
+  //     name: 'Indian Institute of Technology Delhi',
+  //     shortName: 'IIT Delhi',
+  //     established: 1961,
+  //     type: 'Public',
+  //     category: 'Engineering',
+  //     location: {
+  //       address: 'Hauz Khas, New Delhi',
+  //       city: 'New Delhi',
+  //       state: 'Delhi',
+  //       pincode: '110016',
+  //       coordinates: { lat: 28.5449, lng: 77.1929 }
+  //     },
+  //     contact: {
+  //       phone: ['+91-11-2659-1999', '+91-11-2659-1000'],
+  //       email: ['info@iitd.ac.in', 'admissions@iitd.ac.in'],
+  //       website: 'https://www.iitd.ac.in',
+  //       admissionHelpline: '+91-11-2659-1945'
+  //     },
+  //     ratings: {
+  //       overall: 4.8,
+  //       academics: 4.9,
+  //       infrastructure: 4.7,
+  //       faculty: 4.8,
+  //       placement: 4.9,
+  //       hostelLife: 4.5,
+  //       socialLife: 4.6,
+  //       totalReviews: 2453
+  //     },
+  //     fees: {
+  //       tuition: '₹2,50,000',
+  //       hostel: '₹25,000',
+  //       other: '₹15,000',
+  //       total: '₹2,90,000'
+  //     },
+  //     placement: {
+  //       averagePackage: '₹25 LPA',
+  //       highestPackage: '₹2.1 Cr',
+  //       placementRate: 95,
+  //       medianPackage: '₹23 LPA',
+  //       topRecruiters: ['Google', 'Microsoft', 'Amazon', 'Goldman Sachs', 'McKinsey', 'Flipkart'],
+  //       internationalOffers: 32,
+  //       salaryTrends: [
+  //         { year: 2024, average: '₹25 LPA', highest: '₹2.1 Cr', placementRate: 95 },
+  //         { year: 2023, average: '₹24 LPA', highest: '₹1.8 Cr', placementRate: 94 },
+  //         { year: 2022, average: '₹22 LPA', highest: '₹1.6 Cr', placementRate: 92 },
+  //         { year: 2021, average: '₹20 LPA', highest: '₹1.4 Cr', placementRate: 90 }
+  //       ],
+  //       sectorDistribution: [
+  //         { sector: 'Technology & Product', percentage: 42 },
+  //         { sector: 'Consulting & Strategy', percentage: 21 },
+  //         { sector: 'Finance & Analytics', percentage: 16 },
+  //         { sector: 'Core Engineering', percentage: 14 },
+  //         { sector: 'Research & Higher Studies', percentage: 7 }
+  //       ],
+  //       internshipStats: {
+  //         totalInternships: 780,
+  //         ppoRate: 68,
+  //         globalInternships: 94,
+  //         averageStipend: '₹1.5 LPM'
+  //       },
+  //       placementProcess: [
+  //         'Pre-placement talks and company registrations open in August.',
+  //         'Students shortlist companies and submit resumes for profile-based shortlisting.',
+  //         'Aptitude tests, group discussions, and technical interviews run from November.',
+  //         'Final placement interviews are conducted in multiple slots through December and January.'
+  //       ],
+  //       successStories: [
+  //         {
+  //           name: 'Ishaan Malhotra',
+  //           company: 'Google Mountain View',
+  //           package: '$265K',
+  //           role: 'Software Engineer',
+  //           story:
+  //             'Secured a role through the international placement drive after leading projects at the Analytics Club and winning the ACM ICPC regionals.'
+  //         },
+  //         {
+  //           name: 'Megha Rao',
+  //           company: 'McKinsey & Company',
+  //           package: '₹42 LPA',
+  //           role: 'Business Analyst',
+  //           story:
+  //             'Converted a pre-placement offer following a summer internship where she co-authored a digital transformation roadmap for a Fortune 100 client.'
+  //         }
+  //       ],
+  //       branchwise: [
+  //         {
+  //           name: 'Computer Science & Engineering',
+  //           averagePackage: '₹32 LPA',
+  //           medianPackage: '₹29 LPA',
+  //           highestPackage: '₹2.1 Cr',
+  //           placementRate: 99,
+  //           offers: 210,
+  //           topRoles: ['Software Engineer', 'AI/ML Engineer', 'Product Manager'],
+  //           recruiters: ['Google', 'Microsoft', 'Apple', 'LinkedIn']
+  //         },
+  //         {
+  //           name: 'Electrical Engineering',
+  //           averagePackage: '₹24 LPA',
+  //           medianPackage: '₹22 LPA',
+  //           highestPackage: '₹78 LPA',
+  //           placementRate: 96,
+  //           offers: 185,
+  //           topRoles: ['Hardware Engineer', 'Energy Consultant', 'Analog Design Engineer'],
+  //           recruiters: ['Texas Instruments', 'Qualcomm', 'Samsung', 'GE']
+  //         },
+  //         {
+  //           name: 'Mechanical Engineering',
+  //           averagePackage: '₹18 LPA',
+  //           medianPackage: '₹16 LPA',
+  //           highestPackage: '₹52 LPA',
+  //           placementRate: 93,
+  //           offers: 160,
+  //           topRoles: ['Manufacturing Engineer', 'Automotive R&D Engineer', 'Supply Chain Analyst'],
+  //           recruiters: ['Bosch', 'Mahindra', 'Rolls-Royce', 'Tata Motors']
+  //         },
+  //         {
+  //           name: 'Mathematics & Computing',
+  //           averagePackage: '₹28 LPA',
+  //           medianPackage: '₹25 LPA',
+  //           highestPackage: '₹1.2 Cr',
+  //           placementRate: 98,
+  //           offers: 140,
+  //           topRoles: ['Quant Analyst', 'Data Scientist', 'Risk Strategist'],
+  //           recruiters: ['Goldman Sachs', 'JP Morgan', 'Morgan Stanley', 'DE Shaw']
+  //         },
+  //         {
+  //           name: 'Chemical Engineering',
+  //           averagePackage: '₹16 LPA',
+  //           medianPackage: '₹14 LPA',
+  //           highestPackage: '₹39 LPA',
+  //           placementRate: 91,
+  //           offers: 120,
+  //           topRoles: ['Process Engineer', 'Sustainability Consultant', 'R&D Scientist'],
+  //           recruiters: ['ExxonMobil', 'Shell', 'ITC', 'Honeywell']
+  //         }
+  //       ]
+  //     },
+  //     admissions: {
+  //       applicationProcess:
+  //         'Admissions at IIT Delhi follow national-level entrance examinations with centralized counselling and institute-level verification.',
+  //       steps: [
+  //         'Qualify JEE Main and appear for JEE Advanced with a competitive All India Rank.',
+  //         'Register for the Joint Seat Allocation Authority (JoSAA) counselling and complete choice filling.',
+  //         'Lock preferred branches during the counselling window and await seat allotment results.',
+  //         'Report to IIT Delhi for document verification, fee payment, and orientation formalities.'
+  //       ],
+  //       importantDates: [
+  //         { event: 'JEE Main Session 1', startDate: '2023-01-24', endDate: '2023-02-01', status: 'Closed' },
+  //         { event: 'JEE Advanced Examination', startDate: '2023-06-04', endDate: '2023-06-04', status: 'Closed' },
+  //         { event: 'JoSAA Counselling', startDate: '2023-06-19', endDate: '2023-07-31', status: 'Closed' },
+  //         { event: 'Institute Reporting', startDate: '2023-08-10', endDate: '2023-08-15', status: 'Ongoing' },
+  //         { event: 'Orientation & Induction', startDate: '2023-08-20', endDate: '2023-08-25', status: 'Upcoming' }
+  //       ],
+  //       eligibility: [
+  //         {
+  //           program: 'B.Tech Programmes',
+  //           criteria: [
+  //             'Minimum 75% marks in Class XII (65% for SC/ST candidates).',
+  //             'Mandatory subjects: Physics, Chemistry, Mathematics.',
+  //             'Valid JEE Advanced rank within the opening and closing ranges announced by JoSAA.'
+  //           ]
+  //         },
+  //         {
+  //           program: 'M.Tech Programmes',
+  //           criteria: [
+  //             'Bachelor’s degree in relevant discipline with at least 60% aggregate.',
+  //             'Valid GATE score meeting the departmental cut-off.',
+  //             'Departmental interview for certain specialisations.'
+  //           ]
+  //         },
+  //         {
+  //           program: 'MBA Programmes',
+  //           criteria: [
+  //             'Bachelor’s degree with minimum 60% aggregate.',
+  //             'Competitive CAT percentile (98+ recommended).',
+  //             'Personal interview and writing ability test conducted by DMS, IIT Delhi.'
+  //           ]
+  //         }
+  //       ],
+  //       requiredExams: [
+  //         { name: 'JEE Advanced', score: 'AIR within top 5000', weightage: '60%' },
+  //         { name: 'Class XII Board Exams', score: 'Minimum 75% aggregate', weightage: '10%' },
+  //         { name: 'JoSAA Counselling', score: 'Seat allotment & document verification', weightage: '30%' }
+  //       ],
+  //       documents: [
+  //         'JEE Advanced admit card and rank card',
+  //         'Class X and XII mark sheets and passing certificates',
+  //         'Category, PwD, or EWS certificate (if applicable)',
+  //         'Passport-sized colour photographs',
+  //         'Government-issued photo ID and proof of address'
+  //       ],
+  //       faqs: [
+  //         {
+  //           question: 'Is there any relaxation for reserved categories?',
+  //           answer:
+  //             'IIT Delhi follows the Government of India reservation policy with relaxed cut-offs, fee concessions, and preparatory courses for eligible categories.'
+  //         },
+  //         {
+  //           question: 'Can international students apply?',
+  //           answer:
+  //             'International candidates can apply through the DASA scheme, ICCR scholarships, or specific MoUs that IIT Delhi maintains with partner institutions.'
+  //         }
+  //       ]
+  //     },
+  //     academics: {
+  //       courses: {
+  //         undergraduate: ['B.Tech Computer Science', 'B.Tech Mechanical', 'B.Tech Electrical', 'B.Tech Civil'],
+  //         postgraduate: ['M.Tech', 'MBA', 'M.Sc', 'M.Des'],
+  //         phd: ['Ph.D in Engineering', 'Ph.D in Science', 'Ph.D in Management']
+  //       },
+  //       departments: [
+  //         {
+  //           name: 'Computer Science & Engineering',
+  //           summary: 'Advanced computing, artificial intelligence, and scalable systems research with strong industry partnerships.',
+  //           strengths: ['AI & ML Centers', 'High Performance Computing Lab', 'Startup Incubation Support'],
+  //           undergraduateCourses: ['B.Tech Computer Science and Engineering', 'Dual Degree (B.Tech + M.Tech) Computer Science'],
+  //           postgraduateCourses: ['M.Tech Computer Science & Engineering', 'M.S.(R) Computer Science'],
+  //           phdCourses: ['Ph.D Computer Science & Engineering']
+  //         },
+  //         {
+  //           name: 'Electrical Engineering',
+  //           summary: 'Power systems, microelectronics, and communications programs with modern laboratories and national projects.',
+  //           strengths: ['VLSI & Nanoelectronics Lab', 'Smart Grid Research', '5G & IoT Testbeds'],
+  //           undergraduateCourses: ['B.Tech Electrical Engineering', 'B.Tech Engineering Physics'],
+  //           postgraduateCourses: ['M.Tech Power Electronics', 'M.Tech Communications Engineering'],
+  //           phdCourses: ['Ph.D Electrical Engineering']
+  //         },
+  //         {
+  //           name: 'Mechanical Engineering',
+  //           summary: 'Focus on design, manufacturing, thermal sciences, and robotics with extensive cross-disciplinary collaborations.',
+  //           strengths: ['Robotics & Automation Center', 'Advanced Manufacturing Lab', 'Thermal Systems Research'],
+  //           undergraduateCourses: ['B.Tech Mechanical Engineering', 'B.Tech Production & Industrial Engineering'],
+  //           postgraduateCourses: ['M.Tech Design Engineering', 'M.Tech Thermal Engineering'],
+  //           phdCourses: ['Ph.D Mechanical Engineering']
+  //         },
+  //         {
+  //           name: 'Civil Engineering',
+  //           summary: 'Sustainable infrastructure, transportation, and water resources engineering projects impacting smart city initiatives.',
+  //           strengths: ['Structural Dynamics Lab', 'Smart Cities Mission Projects', 'Geospatial Research Hub'],
+  //           undergraduateCourses: ['B.Tech Civil Engineering'],
+  //           postgraduateCourses: ['M.Tech Structural Engineering', 'M.Tech Transportation Engineering'],
+  //           phdCourses: ['Ph.D Civil Engineering']
+  //         },
+  //         {
+  //           name: 'Chemical Engineering',
+  //           summary: 'Bridges fundamental sciences with industrial processes, sustainability goals, and new materials development.',
+  //           strengths: ['Renewable Energy Processes', 'Process Simulation Suite', 'Materials Innovation Center'],
+  //           undergraduateCourses: ['B.Tech Chemical Engineering'],
+  //           postgraduateCourses: ['M.Tech Process Engineering', 'M.Tech Polymer Science & Technology'],
+  //           phdCourses: ['Ph.D Chemical Engineering']
+  //         },
+  //         {
+  //           name: 'Aerospace Engineering',
+  //           summary: 'Aerodynamics, propulsion, avionics, and space technologies supported by world-class testing facilities.',
+  //           strengths: ['Wind Tunnel Facility', 'UAV & Space Systems Lab', 'ISRO & DRDO Projects'],
+  //           undergraduateCourses: ['B.Tech Aerospace Engineering'],
+  //           postgraduateCourses: ['M.Tech Aerodynamics & Propulsion', 'M.Tech Flight Mechanics & Control'],
+  //           phdCourses: ['Ph.D Aerospace Engineering']
+  //         }
+  //       ],
+  //       facultyCount: 450,
+  //       studentFacultyRatio: '1:8'
+  //     },
+  //     infrastructure: {
+  //       overview:
+  //         'IIT Delhi’s 325-acre smart campus blends academic rigor with collaborative spaces, innovation districts, and student-centric amenities designed to support round-the-clock learning and community life.',
+  //       keyHighlights: [
+  //         'Integrated academic, hostel, and recreational zones within a 10-minute walk',
+  //         '24/7 digitized access to libraries, labs, and collaborative studios',
+  //         'IoT-enabled sustainability initiatives cutting emissions by 35%'
+  //       ],
+  //       campus: {
+  //         area: '325 acres',
+  //         buildings: 45,
+  //         labs: 120,
+  //         libraries: 6
+  //       },
+  //       facilities: ['Wi-Fi Campus', 'Sports Complex', 'Medical Center', 'Cafeterias', 'Bank', 'Post Office'],
+  //       hostel: {
+  //         capacity: 8000,
+  //         rooms: 'Single & Double',
+  //         facilities: ['Wi-Fi', 'Mess', 'Common Room', 'Gym', 'Laundry']
+  //       },
+  //       innovationCenters: [
+  //         {
+  //           name: 'Technology Business Incubator',
+  //           focus: 'Startup acceleration & seed funding support',
+  //           description: 'Provides co-working space, mentorship, and investor connects for student-led ventures.',
+  //           link: 'https://tbi.iitd.ac.in'
+  //         },
+  //         {
+  //           name: 'Centre for AI & Robotics',
+  //           focus: 'Artificial Intelligence & Autonomous Systems',
+  //           description: 'Houses advanced computing clusters, robotics labs, and industry-sponsored research pods.',
+  //           link: 'https://cair.iitd.ac.in'
+  //         },
+  //         {
+  //           name: 'Sustainable Energy Lab',
+  //           focus: 'Renewable energy & climate tech',
+  //           description: 'Dedicated facility for solar, wind, and energy storage research in partnership with global energy players.',
+  //           link: 'https://sustenergy.iitd.ac.in'
+  //         }
+  //       ],
+  //       digitalInfrastructure: [
+  //         '10 Gbps backbone network with campus-wide Wi-Fi 6 coverage',
+  //         'Smart classrooms equipped with AR/VR pods and lecture capture systems',
+  //         'AI-enabled library discovery system with 24/7 digital access',
+  //         'Student super-app consolidating attendance, courseware, and campus services'
+  //       ],
+  //       sustainabilityInitiatives: [
+  //         {
+  //           title: 'Net-Zero by 2030 Roadmap',
+  //           impact: 'Current campus emissions already reduced by 35% via solar rooftops and smart metering.'
+  //         },
+  //         {
+  //           title: 'Water Positive Campus',
+  //           impact: 'Rainwater harvesting, greywater recycling, and AI-monitored usage save 18 million litres annually.'
+  //         },
+  //         {
+  //           title: 'Zero-Waste Hostels',
+  //           impact: 'Segregated waste streams with biogas plants powering hostel kitchens.'
+  //         }
+  //       ],
+  //       transport: [
+  //         { mode: 'EV Shuttle Network', frequency: 'Runs every 7 minutes covering all hostels and departments' },
+  //         { mode: 'City Bus Interchange', frequency: 'Dedicated DTC services at campus gate during peak hours' },
+  //         { mode: 'Cycling Infrastructure', frequency: '700+ shared bicycles with docking stations across campus' }
+  //       ]
+  //     },
+  //     socialMedia: {
+  //       official: {
+  //         facebook: 'https://facebook.com/iitdelhi',
+  //         twitter: 'https://twitter.com/iitdelhi',
+  //         instagram: 'https://instagram.com/iitdelhi',
+  //         youtube: 'https://youtube.com/iitdelhi',
+  //         linkedin: 'https://linkedin.com/school/iitdelhi'
+  //       }
+  //     },
+  //     reviews: {
+  //       highlights: [
+  //         'Faculty actively encourage interdisciplinary research and innovation.',
+  //         'Robust alumni mentorship ensures industry exposure and networking.',
+  //         'Student bodies run over 200 clubs that keep the campus vibrant year-round.'
+  //       ],
+  //       distribution: [
+  //         { label: 'Academics', value: 96 },
+  //         { label: 'Placements', value: 94 },
+  //         { label: 'Infrastructure', value: 91 },
+  //         { label: 'Campus Life', value: 89 },
+  //         { label: 'Value for Money', value: 88 }
+  //       ],
+  //       testimonials: [
+  //         {
+  //           name: 'Ananya Verma',
+  //           program: 'B.Tech Computer Science',
+  //           batch: 'Class of 2025',
+  //           content:
+  //             'The curriculum is rigorous but the ecosystem pushes you to innovate. Access to labs and mentorship helped me co-found a startup in my second year.',
+  //           rating: 5
+  //         },
+  //         {
+  //           name: 'Rahul Mehta',
+  //           program: 'MBA',
+  //           batch: 'Class of 2023',
+  //           content:
+  //             'Industry projects, leadership labs, and the peer group at DMS IIT Delhi prepared me for consulting roles with top firms.',
+  //           rating: 4
+  //         },
+  //         {
+  //           name: 'Sneha Kulkarni',
+  //           program: 'M.Tech Mechanical Engineering',
+  //           batch: 'Class of 2024',
+  //           content:
+  //             'International collaborations and fully-equipped research centres made it easy to pursue cutting-edge work in sustainable manufacturing.',
+  //           rating: 5
+  //         }
+  //       ]
+  //     },
+  //     images: {
+  //       campus: ['/api/placeholder/800/600', '/api/placeholder/800/600', '/api/placeholder/800/600'],
+  //       hostel: ['/api/placeholder/800/600', '/api/placeholder/800/600'],
+  //       facilities: ['/api/placeholder/800/600', '/api/placeholder/800/600', '/api/placeholder/800/600'],
+  //       events: ['/api/placeholder/800/600', '/api/placeholder/800/600']
+  //     },
+  //     campusExperience: {
+  //       lifestyleHighlights: [
+  //         {
+  //           title: 'Interdisciplinary Learning Pods',
+  //           description: 'Evenings see cross-disciplinary teams collaborating on hackathons, design jams, and policy labs.'
+  //         },
+  //         {
+  //           title: 'Vibrant Cultural Calendar',
+  //           description: 'From open mic nights to classical concerts, multiple student societies host performances every week.'
+  //         },
+  //         {
+  //           title: 'Nightlife that Nurtures',
+  //           description: '24/7 reading rooms, late-night cafes, and safe mobility ensure productivity beyond classroom hours.'
+  //         }
+  //       ],
+  //       dailyTimeline: [
+  //         { time: '06:30', activity: 'Joggers, cyclists, and sports teams take over the athletics track and fitness trails.' },
+  //         { time: '09:00', activity: 'Core lectures and lab sessions kick off across departments with blended learning setups.' },
+  //         { time: '13:00', activity: 'Hostel messes and food courts serve regional cuisines alongside healthy salad bars.' },
+  //         { time: '17:30', activity: 'Clubs meet for rehearsals, coding sprints, debating leagues, and social impact initiatives.' },
+  //         { time: '22:00', activity: 'Study lounges, maker spaces, and the central library remain abuzz with collaborative projects.' }
+  //       ],
+  //       supportServices: [
+  //         {
+  //           name: 'Career Development Cell',
+  //           description: 'Resume clinics, mock interviews, and sector-specific mentoring led by alumni and industry experts.'
+  //         },
+  //         {
+  //           name: 'Student Wellbeing Office',
+  //           description: 'On-call counsellors, wellness workshops, and mental health first-aiders deployed hostel-wise.'
+  //         },
+  //         {
+  //           name: 'Academic Success Studio',
+  //           description: 'Peer-assisted learning modules, writing labs, and analytics-backed course planning support.'
+  //         }
+  //       ],
+  //       diningOptions: [
+  //         { name: 'Himalayan Hub', type: 'Multi-cuisine Food Court', signature: 'Pan-Asian live counters & organic salad bar', openTill: '01:00 AM' },
+  //         { name: 'Nilgiri Mess', type: 'Hostel Dining', signature: 'Local farm-to-table menu with weekly millet specials', openTill: '10:00 PM' },
+  //         { name: 'The Innovation Café', type: 'Grab-n-Go & Specialty Coffee', signature: 'Nitro brews, protein bowls, keto-friendly snacks', openTill: '02:00 AM' }
+  //       ],
+  //       sportsAndFitness: [
+  //         { name: 'Olympic-size Aquatic Complex', details: 'Heated pool with underwater cameras and FINA-compliant lanes.' },
+  //         { name: 'High-Performance Gym', details: 'Strength & conditioning arena with wearable tech tracking and physiotherapy suite.' },
+  //         { name: 'Multi-sport Indoor Arena', details: 'Badminton, squash, climbing wall, and esports lab under one roof.' }
+  //       ],
+  //       wellnessPrograms: [
+  //         { name: 'Mindful Mondays', description: 'Guided meditation and breathwork sessions facilitated by certified practitioners.' },
+  //         { name: 'Fit@IITD', description: 'Campus-wide step challenges, sports leagues, and personalised fitness coaching.' },
+  //         { name: 'Thrive Circles', description: 'Peer-led support groups discussing academic resilience and work-life balance.' }
+  //       ]
+  //     },
+  //     alumniNetwork: {
+  //       totalAlumni: 50000,
+  //       notableAlumni: [
+  //         { name: 'Sundar Pichai', position: 'CEO', company: 'Google', image: '/api/placeholder/100/100' },
+  //         { name: 'Vinod Khosla', position: 'Co-founder', company: 'Sun Microsystems', image: '/api/placeholder/100/100' },
+  //         { name: 'Rajat Gupta', position: 'Former MD', company: 'McKinsey', image: '/api/placeholder/100/100' }
+  //       ]
+  //     },
+  //     clubs: [
+  //       {
+  //         name: 'Robotics Club',
+  //         description: 'Designs autonomous systems, humanoids, and swarm robotics while mentoring school outreach teams.',
+  //         achievements: [
+  //           'ABU Robocon India 2024 champions with three innovation laurels',
+  //           'Published two IEEE papers on modular swarm navigation in 2023'
+  //         ],
+  //         contactEmail: 'robotics.club@iitd.ac.in',
+  //         social: {
+  //           instagram: 'https://www.instagram.com/iitdrobotics/',
+  //           youtube: 'https://www.youtube.com/@iitdrobotics',
+  //           discord: 'https://discord.gg/robotics-iitd',
+  //           website: 'https://robotics.iitd.ac.in'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/0uaquGZKx_0'
+  //       },
+  //       {
+  //         name: 'Coding Club',
+  //         description: 'Competitive programming, open-source cohorts, and hackathons powering the institute tech community.',
+  //         achievements: [
+  //           'Ranked #2 globally in ICPC 2024 Asia-West regionals',
+  //           'Maintains 40+ open-source repositories adopted by startups'
+  //         ],
+  //         contactEmail: 'coding.club@iitd.ac.in',
+  //         social: {
+  //           twitter: 'https://twitter.com/iitdcoding',
+  //           linkedin: 'https://www.linkedin.com/company/iitd-coding-club/',
+  //           website: 'https://codingclub.iitd.ac.in'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/PkZNo7MFNFg'
+  //       },
+  //       {
+  //         name: 'Entrepreneurship & Leadership Cell',
+  //         description: 'Startup accelerator, mentorship network, and angel connect platform run by student founders.',
+  //         achievements: [
+  //           'Incubated 22 funded startups in the last three cohorts',
+  //           'Hosted Asia’s largest campus investor day with 180 VCs'
+  //         ],
+  //         contactEmail: 'els.iitd@iitd.ac.in',
+  //         social: {
+  //           instagram: 'https://www.instagram.com/iitd_elc/',
+  //           linkedin: 'https://www.linkedin.com/company/iitd-entrepreneurship-cell/',
+  //           facebook: 'https://www.facebook.com/iitdelhi.ecell',
+  //           website: 'https://ecell.iitd.ac.in'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/t6fdJ5N0X9Q'
+  //       },
+  //       {
+  //         name: 'Music Society (MeLa)',
+  //         description: 'Choirs, bands, and producers collaborating on fusions, EDM, and classical showcases.',
+  //         achievements: [
+  //           'Released “Raaga Reloaded” EP featuring 15 campus artists',
+  //           'Winners of Mood Indigo “Battle of Bands” 2023'
+  //         ],
+  //         contactEmail: 'music.society@iitd.ac.in',
+  //         social: {
+  //           instagram: 'https://www.instagram.com/mela_iitd/',
+  //           youtube: 'https://www.youtube.com/channel/UCMeLaSessions',
+  //           website: 'https://mela.iitd.ac.in'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/7NOSDKb0HlU'
+  //       },
+  //       {
+  //         name: 'Lenscraft Collective',
+  //         description: 'Photography and film-making storytellers documenting campus, culture, and research breakthroughs.',
+  //         achievements: [
+  //           'Curated India’s first student-run XR photo festival',
+  //           'Official photography partner for 30+ national events'
+  //         ],
+  //         contactEmail: 'lenscraft@iitd.ac.in',
+  //         social: {
+  //           instagram: 'https://www.instagram.com/iitd_lenscraft/',
+  //           youtube: 'https://www.youtube.com/@lenscraftfilms',
+  //           website: 'https://lenscraft.iitd.ac.in'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/1La4QzGeaaQ'
+  //       },
+  //       {
+  //         name: 'Stagecraft Society',
+  //         description: 'Theatre troupe producing dramas, improv, and street plays on social impact narratives.',
+  //         achievements: [
+  //           'Best script & ensemble at IIT Bombay’s StageFest 2024',
+  //           'Styled 12-city street play tour on sustainability awareness'
+  //         ],
+  //         contactEmail: 'stagecraft@iitd.ac.in',
+  //         social: {
+  //           facebook: 'https://www.facebook.com/stagecraftiitd',
+  //           instagram: 'https://www.instagram.com/stagecraft_iitd/',
+  //           youtube: 'https://www.youtube.com/@stagecraftplays'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/JXh1Gd2N4Vg'
+  //       }
+  //     ],
+  //     events: [
+  //       {
+  //         name: 'Rendezvous',
+  //         type: 'Cultural Fest',
+  //         description: 'Four-day celebration with concerts, workshops, and 180+ competitions attracting 120K+ attendees.',
+  //         date: '2024-03-15',
+  //         image: '/api/placeholder/400/300',
+  //         location: 'Main Campus • Open Air Theatre & Cultural Blocks',
+  //         registrationLink: 'https://rendezvous.iitd.ac.in/register',
+  //         highlights: [
+  //           'Headliner nights featuring global indie and fusion artists',
+  //           'Experiential villages, creator meetups, and interactive art trails',
+  //           'Flagship competitions: Blitzkrieg, Stage Play, Campus Princess'
+  //         ],
+  //         social: {
+  //           instagram: 'https://www.instagram.com/rendezvousiitd/',
+  //           youtube: 'https://www.youtube.com/@rendezvousiitd',
+  //           facebook: 'https://www.facebook.com/rendezvousiitd',
+  //           website: 'https://rendezvous.iitd.ac.in'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/0uaquGZKx_0'
+  //       },
+  //       {
+  //         name: 'Tryst',
+  //         type: 'Tech Fest',
+  //         description: 'National technology conclave with keynote speakers, makeathons, and industry showcases.',
+  //         date: '2024-02-20',
+  //         image: '/api/placeholder/400/300',
+  //         location: 'Convention Centre & Research Park',
+  //         registrationLink: 'https://tryst.iitd.ac.in/register',
+  //         highlights: [
+  //           '48-hour flagship hackathon with $25K prize pool',
+  //           'Hands-on labs in AI, quantum, space tech, and climate action',
+  //           'Deep-tech expo co-hosted with 35 research labs and unicorns'
+  //         ],
+  //         social: {
+  //           twitter: 'https://twitter.com/trystiitd',
+  //           linkedin: 'https://www.linkedin.com/company/tryst-iit-delhi/',
+  //           youtube: 'https://www.youtube.com/@trystiitdelhi',
+  //           website: 'https://tryst.iitd.ac.in'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/wX78iKhInsc'
+  //       },
+  //       {
+  //         name: 'E-Summit',
+  //         type: 'Startup Summit',
+  //         description: 'Entrepreneurship summit uniting founders, investors, and policymakers for curated masterclasses.',
+  //         date: '2024-09-05',
+  //         image: '/api/placeholder/400/300',
+  //         location: 'Technology Business Incubator & Lecture Hall Complex',
+  //         registrationLink: 'https://esummit.iitd.ac.in/register',
+  //         highlights: [
+  //           'Reverse pitch arena with 60+ venture funds',
+  //           'Founder fireside chats with unicorn leaders and alumni',
+  //           'Micro accelerator demo day featuring 15 campus startups'
+  //         ],
+  //         social: {
+  //           instagram: 'https://www.instagram.com/esummitiitd/',
+  //           linkedin: 'https://www.linkedin.com/company/iitd-esummit/',
+  //           website: 'https://esummit.iitd.ac.in'
+  //         },
+  //         mediaEmbed: 'https://www.youtube.com/embed/t6fdJ5N0X9Q'
+  //       }
+  //     ],
+  //     scholarships: [
+  //       { name: 'Merit Scholarship', amount: '₹50,000', eligibility: 'Top 10%', description: 'For meritorious students' },
+  //       { name: 'Need-based Aid', amount: '₹1,00,000', eligibility: 'Family income < 5 LPA', description: 'Financial assistance' }
+  //     ],
+  //     nearbyPlaces: [
+  //       { name: 'Green Park Metro', distance: '2 km', type: 'Transport' },
+  //       { name: 'Deer Park', distance: '1 km', type: 'Recreation' },
+  //       { name: 'INA Market', distance: '3 km', type: 'Shopping' }
+  //     ],
+  //     news: [
+  //       { title: 'IIT Delhi ranks #1 in engineering', date: '2024-01-15', category: 'Rankings', excerpt: 'Latest NIRF rankings released', image: '/api/placeholder/300/200' },
+  //       { title: 'New AI research center inaugurated', date: '2024-01-10', category: 'Research', excerpt: 'State-of-the-art facility opened', image: '/api/placeholder/300/200' }
+  //     ],
+  //     startups: [
+  //       { name: 'Zomato', founder: 'Deepinder Goyal', description: 'Food delivery platform', funding: '$2B+', image: '/api/placeholder/200/150' },
+  //       { name: 'Paytm', founder: 'Vijay Shekhar Sharma', description: 'Digital payments', funding: '$3B+', image: '/api/placeholder/200/150' }
+  //     ],
+  //     funding: {
+  //       totalFunding: '₹500 Cr',
+  //       sources: ['Government of India', 'Private Donations', 'Research Grants'],
+  //       recentGrants: [
+  //         { amount: '₹50 Cr', source: 'MHRD', purpose: 'Infrastructure Development', year: 2024 },
+  //         { amount: '₹25 Cr', source: 'DST', purpose: 'Research Projects', year: 2023 }
+  //       ]
+  //     }
+  //   };
 
-    setCollege(mockCollegeData);
+  //   setCollege(mockCollegeData);
+  // }, [params.id]);
+
+
+  useEffect(() => {
+    // Replace with the actual backend API URL (adjust for your FastAPI deployment/server)
+    const url = `${API_URL}/college/by-id/${params.id}`; // If you registered your router without prefix
+    // If you use a prefix like "/api" in your backend, use `/api/college/by-id/${params.id}`
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then((data: CollegeData) => setCollege(data))
+      .catch((e) => {
+        // Optionally show error state
+        setCollege(null);
+        console.error(e);
+      });
   }, [params.id]);
 
   useEffect(() => {
