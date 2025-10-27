@@ -18,6 +18,16 @@ import {
   Bus, Sparkles, Medal
 } from 'lucide-react';
 
+const socialIconConfig = {
+  instagram: { icon: Instagram, label: 'Instagram' },
+  youtube: { icon: Youtube, label: 'YouTube' },
+  facebook: { icon: Facebook, label: 'Facebook' },
+  twitter: { icon: Twitter, label: 'Twitter' },
+  linkedin: { icon: Linkedin, label: 'LinkedIn' },
+  website: { icon: Globe, label: 'Website' },
+  discord: { icon: MessageCircle, label: 'Community' }
+} as const;
+
 interface CollegeData {
   id: number;
   name: string;
@@ -138,6 +148,8 @@ interface CollegeData {
     studentFacultyRatio: string;
   };
   infrastructure: {
+    overview: string;
+    keyHighlights: string[];
     campus: {
       area: string;
       buildings: number;
@@ -154,6 +166,7 @@ interface CollegeData {
       name: string;
       focus: string;
       description: string;
+      link?: string;
     }>;
     digitalInfrastructure: string[];
     sustainabilityInitiatives: Array<{
@@ -231,13 +244,40 @@ interface CollegeData {
       image: string;
     }>;
   };
-  clubs: string[];
+  clubs: Array<{
+    name: string;
+    description: string;
+    achievements: string[];
+    contactEmail: string;
+    social: {
+      instagram?: string;
+      youtube?: string;
+      facebook?: string;
+      twitter?: string;
+      linkedin?: string;
+      discord?: string;
+      website?: string;
+    };
+    mediaEmbed?: string;
+  }>;
   events: Array<{
     name: string;
     type: string;
     description: string;
     date: string;
     image: string;
+    location: string;
+    registrationLink: string;
+    highlights: string[];
+    social: {
+      instagram?: string;
+      youtube?: string;
+      facebook?: string;
+      twitter?: string;
+      website?: string;
+      linkedin?: string;
+    };
+    mediaEmbed?: string;
   }>;
   scholarships: Array<{
     name: string;
@@ -555,6 +595,13 @@ const CollegePage = () => {
         studentFacultyRatio: '1:8'
       },
       infrastructure: {
+        overview:
+          'IIT Delhi’s 325-acre smart campus blends academic rigor with collaborative spaces, innovation districts, and student-centric amenities designed to support round-the-clock learning and community life.',
+        keyHighlights: [
+          'Integrated academic, hostel, and recreational zones within a 10-minute walk',
+          '24/7 digitized access to libraries, labs, and collaborative studios',
+          'IoT-enabled sustainability initiatives cutting emissions by 35%'
+        ],
         campus: {
           area: '325 acres',
           buildings: 45,
@@ -571,17 +618,20 @@ const CollegePage = () => {
           {
             name: 'Technology Business Incubator',
             focus: 'Startup acceleration & seed funding support',
-            description: 'Provides co-working space, mentorship, and investor connects for student-led ventures.'
+            description: 'Provides co-working space, mentorship, and investor connects for student-led ventures.',
+            link: 'https://tbi.iitd.ac.in'
           },
           {
             name: 'Centre for AI & Robotics',
             focus: 'Artificial Intelligence & Autonomous Systems',
-            description: 'Houses advanced computing clusters, robotics labs, and industry-sponsored research pods.'
+            description: 'Houses advanced computing clusters, robotics labs, and industry-sponsored research pods.',
+            link: 'https://cair.iitd.ac.in'
           },
           {
             name: 'Sustainable Energy Lab',
             focus: 'Renewable energy & climate tech',
-            description: 'Dedicated facility for solar, wind, and energy storage research in partnership with global energy players.'
+            description: 'Dedicated facility for solar, wind, and energy storage research in partnership with global energy players.',
+            link: 'https://sustenergy.iitd.ac.in'
           }
         ],
         digitalInfrastructure: [
@@ -725,10 +775,163 @@ const CollegePage = () => {
           { name: 'Rajat Gupta', position: 'Former MD', company: 'McKinsey', image: '/api/placeholder/100/100' }
         ]
       },
-      clubs: ['Robotics Club', 'Photography Club', 'Drama Club', 'Music Society', 'Literary Society', 'Coding Club'],
+      clubs: [
+        {
+          name: 'Robotics Club',
+          description: 'Designs autonomous systems, humanoids, and swarm robotics while mentoring school outreach teams.',
+          achievements: [
+            'ABU Robocon India 2024 champions with three innovation laurels',
+            'Published two IEEE papers on modular swarm navigation in 2023'
+          ],
+          contactEmail: 'robotics.club@iitd.ac.in',
+          social: {
+            instagram: 'https://www.instagram.com/iitdrobotics/',
+            youtube: 'https://www.youtube.com/@iitdrobotics',
+            discord: 'https://discord.gg/robotics-iitd',
+            website: 'https://robotics.iitd.ac.in'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/0uaquGZKx_0'
+        },
+        {
+          name: 'Coding Club',
+          description: 'Competitive programming, open-source cohorts, and hackathons powering the institute tech community.',
+          achievements: [
+            'Ranked #2 globally in ICPC 2024 Asia-West regionals',
+            'Maintains 40+ open-source repositories adopted by startups'
+          ],
+          contactEmail: 'coding.club@iitd.ac.in',
+          social: {
+            twitter: 'https://twitter.com/iitdcoding',
+            linkedin: 'https://www.linkedin.com/company/iitd-coding-club/',
+            website: 'https://codingclub.iitd.ac.in'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/PkZNo7MFNFg'
+        },
+        {
+          name: 'Entrepreneurship & Leadership Cell',
+          description: 'Startup accelerator, mentorship network, and angel connect platform run by student founders.',
+          achievements: [
+            'Incubated 22 funded startups in the last three cohorts',
+            'Hosted Asia’s largest campus investor day with 180 VCs'
+          ],
+          contactEmail: 'els.iitd@iitd.ac.in',
+          social: {
+            instagram: 'https://www.instagram.com/iitd_elc/',
+            linkedin: 'https://www.linkedin.com/company/iitd-entrepreneurship-cell/',
+            facebook: 'https://www.facebook.com/iitdelhi.ecell',
+            website: 'https://ecell.iitd.ac.in'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/t6fdJ5N0X9Q'
+        },
+        {
+          name: 'Music Society (MeLa)',
+          description: 'Choirs, bands, and producers collaborating on fusions, EDM, and classical showcases.',
+          achievements: [
+            'Released “Raaga Reloaded” EP featuring 15 campus artists',
+            'Winners of Mood Indigo “Battle of Bands” 2023'
+          ],
+          contactEmail: 'music.society@iitd.ac.in',
+          social: {
+            instagram: 'https://www.instagram.com/mela_iitd/',
+            youtube: 'https://www.youtube.com/channel/UCMeLaSessions',
+            website: 'https://mela.iitd.ac.in'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/7NOSDKb0HlU'
+        },
+        {
+          name: 'Lenscraft Collective',
+          description: 'Photography and film-making storytellers documenting campus, culture, and research breakthroughs.',
+          achievements: [
+            'Curated India’s first student-run XR photo festival',
+            'Official photography partner for 30+ national events'
+          ],
+          contactEmail: 'lenscraft@iitd.ac.in',
+          social: {
+            instagram: 'https://www.instagram.com/iitd_lenscraft/',
+            youtube: 'https://www.youtube.com/@lenscraftfilms',
+            website: 'https://lenscraft.iitd.ac.in'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/1La4QzGeaaQ'
+        },
+        {
+          name: 'Stagecraft Society',
+          description: 'Theatre troupe producing dramas, improv, and street plays on social impact narratives.',
+          achievements: [
+            'Best script & ensemble at IIT Bombay’s StageFest 2024',
+            'Styled 12-city street play tour on sustainability awareness'
+          ],
+          contactEmail: 'stagecraft@iitd.ac.in',
+          social: {
+            facebook: 'https://www.facebook.com/stagecraftiitd',
+            instagram: 'https://www.instagram.com/stagecraft_iitd/',
+            youtube: 'https://www.youtube.com/@stagecraftplays'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/JXh1Gd2N4Vg'
+        }
+      ],
       events: [
-        { name: 'Rendezvous', type: 'Cultural Fest', description: 'Annual cultural festival', date: '2024-03-15', image: '/api/placeholder/400/300' },
-        { name: 'Tryst', type: 'Tech Fest', description: 'Technical festival', date: '2024-02-20', image: '/api/placeholder/400/300' }
+        {
+          name: 'Rendezvous',
+          type: 'Cultural Fest',
+          description: 'Four-day celebration with concerts, workshops, and 180+ competitions attracting 120K+ attendees.',
+          date: '2024-03-15',
+          image: '/api/placeholder/400/300',
+          location: 'Main Campus • Open Air Theatre & Cultural Blocks',
+          registrationLink: 'https://rendezvous.iitd.ac.in/register',
+          highlights: [
+            'Headliner nights featuring global indie and fusion artists',
+            'Experiential villages, creator meetups, and interactive art trails',
+            'Flagship competitions: Blitzkrieg, Stage Play, Campus Princess'
+          ],
+          social: {
+            instagram: 'https://www.instagram.com/rendezvousiitd/',
+            youtube: 'https://www.youtube.com/@rendezvousiitd',
+            facebook: 'https://www.facebook.com/rendezvousiitd',
+            website: 'https://rendezvous.iitd.ac.in'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/0uaquGZKx_0'
+        },
+        {
+          name: 'Tryst',
+          type: 'Tech Fest',
+          description: 'National technology conclave with keynote speakers, makeathons, and industry showcases.',
+          date: '2024-02-20',
+          image: '/api/placeholder/400/300',
+          location: 'Convention Centre & Research Park',
+          registrationLink: 'https://tryst.iitd.ac.in/register',
+          highlights: [
+            '48-hour flagship hackathon with $25K prize pool',
+            'Hands-on labs in AI, quantum, space tech, and climate action',
+            'Deep-tech expo co-hosted with 35 research labs and unicorns'
+          ],
+          social: {
+            twitter: 'https://twitter.com/trystiitd',
+            linkedin: 'https://www.linkedin.com/company/tryst-iit-delhi/',
+            youtube: 'https://www.youtube.com/@trystiitdelhi',
+            website: 'https://tryst.iitd.ac.in'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/wX78iKhInsc'
+        },
+        {
+          name: 'E-Summit',
+          type: 'Startup Summit',
+          description: 'Entrepreneurship summit uniting founders, investors, and policymakers for curated masterclasses.',
+          date: '2024-09-05',
+          image: '/api/placeholder/400/300',
+          location: 'Technology Business Incubator & Lecture Hall Complex',
+          registrationLink: 'https://esummit.iitd.ac.in/register',
+          highlights: [
+            'Reverse pitch arena with 60+ venture funds',
+            'Founder fireside chats with unicorn leaders and alumni',
+            'Micro accelerator demo day featuring 15 campus startups'
+          ],
+          social: {
+            instagram: 'https://www.instagram.com/esummitiitd/',
+            linkedin: 'https://www.linkedin.com/company/iitd-esummit/',
+            website: 'https://esummit.iitd.ac.in'
+          },
+          mediaEmbed: 'https://www.youtube.com/embed/t6fdJ5N0X9Q'
+        }
       ],
       scholarships: [
         { name: 'Merit Scholarship', amount: '₹50,000', eligibility: 'Top 10%', description: 'For meritorious students' },
@@ -858,6 +1061,28 @@ const CollegePage = () => {
   const selectedDepartmentData = college.academics.departments.find(
     (dept) => dept.name === selectedDepartment
   );
+
+  const renderSocialLinks = (
+    social: Partial<Record<keyof typeof socialIconConfig, string | undefined>>
+  ) =>
+    Object.entries(social).map(([platform, url]) => {
+      if (!url) return null;
+      const config = socialIconConfig[platform as keyof typeof socialIconConfig];
+      if (!config) return null;
+      const Icon = config.icon;
+      return (
+        <Link
+          key={platform}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+        >
+          <Icon className="h-3.5 w-3.5" />
+          {config.label}
+        </Link>
+      );
+    });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1853,13 +2078,54 @@ const CollegePage = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {college.clubs.map((club, index) => (
-                      <div key={club} className="rounded-lg border border-gray-200 bg-gray-50 p-5 hover:border-blue-300 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold">
-                            {String.fromCharCode(65 + (index % 26))}
+                    {college.clubs.map((club) => (
+                      <div
+                        key={club.name}
+                        className="flex flex-col rounded-xl border border-gray-200 bg-gray-50 p-5 hover:border-blue-300 transition-colors"
+                      >
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-800">{club.name}</h3>
+                              <p className="mt-2 text-sm text-gray-600 leading-relaxed">{club.description}</p>
+                            </div>
                           </div>
-                          <h3 className="font-semibold text-gray-800">{club}</h3>
+
+                          <div className="space-y-2">
+                            {club.achievements.map((achievement, index) => (
+                              <div key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                                <Sparkles className="h-4 w-4 text-blue-500 mt-0.5" />
+                                <span>{achievement}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {club.mediaEmbed && (
+                          <div className="mt-4 aspect-video overflow-hidden rounded-lg border border-gray-200">
+                            <iframe
+                              src={club.mediaEmbed}
+                              title={`${club.name} highlight`}
+                              className="h-full w-full"
+                              loading="lazy"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                            ></iframe>
+                          </div>
+                        )}
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {renderSocialLinks(club.social)}
+                        </div>
+
+                        <div className="mt-4 rounded-lg bg-white px-3 py-2 text-xs text-gray-600">
+                          Reach out at{' '}
+                          <a
+                            href={`mailto:${club.contactEmail}`}
+                            className="font-semibold text-blue-600 hover:underline"
+                          >
+                            {club.contactEmail}
+                          </a>
                         </div>
                       </div>
                     ))}
@@ -1870,18 +2136,68 @@ const CollegePage = () => {
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Flagship Festivals & Annual Events</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {college.events.map((event) => (
-                      <div key={event.name} className="overflow-hidden rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
-                        <img src={event.image} alt={event.name} className="h-32 w-full object-cover" />
-                        <div className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="bg-purple-100 text-purple-600 px-2 py-1 rounded text-xs font-medium">{event.type}</span>
-                            <span className="text-gray-500 text-xs flex items-center">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              {event.date}
-                            </span>
+                      <div
+                        key={event.name}
+                        className="flex flex-col overflow-hidden rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
+                      >
+                        <img src={event.image} alt={event.name} className="h-40 w-full object-cover" />
+                        <div className="p-5 flex flex-col gap-4">
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <span className="bg-purple-100 text-purple-600 px-2.5 py-1 rounded text-xs font-semibold">
+                                {event.type}
+                              </span>
+                              <div className="text-right">
+                                <div className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  {event.date}
+                                </div>
+                                <div className="mt-2 inline-flex items-start gap-1 text-[11px] text-gray-500">
+                                  <MapPin className="h-3.5 w-3.5 text-blue-500" />
+                                  <span className="max-w-[12rem] leading-4">{event.location}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-800">{event.name}</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed">{event.description}</p>
                           </div>
-                          <h3 className="font-semibold text-gray-800 mb-2">{event.name}</h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">{event.description}</p>
+
+                          <ul className="space-y-2 text-sm text-gray-600">
+                            {event.highlights.map((highlight, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <Medal className="h-4 w-4 text-amber-500 mt-0.5" />
+                                <span>{highlight}</span>
+                              </li>
+                            ))}
+                          </ul>
+
+                          {event.mediaEmbed && (
+                            <div className="aspect-video overflow-hidden rounded-lg border border-gray-200">
+                              <iframe
+                                src={event.mediaEmbed}
+                                title={`${event.name} aftermovie`}
+                                className="h-full w-full"
+                                loading="lazy"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                              ></iframe>
+                            </div>
+                          )}
+
+                          <div className="flex flex-wrap items-center gap-3">
+                            <Link
+                              href={event.registrationLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              Register now
+                            </Link>
+                            <div className="flex flex-wrap gap-2">
+                              {renderSocialLinks(event.social)}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1894,6 +2210,20 @@ const CollegePage = () => {
               <div className="space-y-8">
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Campus Infrastructure</h2>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    {college.infrastructure.overview}
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                    {college.infrastructure.keyHighlights.map((highlight, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50/40 p-3"
+                      >
+                        <Sparkles className="h-4 w-4 text-blue-500 mt-1" />
+                        <span className="text-sm text-gray-700 leading-relaxed">{highlight}</span>
+                      </div>
+                    ))}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                     <div className="text-center">
                       <Building className="h-8 w-8 text-blue-600 mx-auto mb-2" />
@@ -1952,6 +2282,17 @@ const CollegePage = () => {
                           <Rocket className="h-5 w-5 text-blue-500" />
                         </div>
                         <p className="text-sm text-gray-600 leading-relaxed">{center.description}</p>
+                        {center.link && (
+                          <Link
+                            href={center.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                          >
+                            Explore hub
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
                       </div>
                     ))}
                   </div>
