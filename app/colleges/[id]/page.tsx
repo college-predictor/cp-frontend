@@ -15,7 +15,7 @@ import {
   ListChecks, HelpCircle, CheckCircle2, LineChart,
   Globe2, UserCheck, Rocket, Handshake, Sun, Moon,
   Utensils, Dumbbell, HeartPulse, LifeBuoy, Leaf,
-  Bus, Sparkles, Medal
+  Bus, Sparkles, Medal, Filter
 } from 'lucide-react';
 
 const socialIconConfig = {
@@ -32,15 +32,19 @@ interface CollegeData {
   id: number;
   name: string;
   shortName: string;
+  aboutHTML: string;
   established: number;
-  type: 'Public' | 'Private' | 'Deemed';
+  type: string;
   category: string;
   location: {
     address: string;
     city: string;
     state: string;
     pincode: string;
-    coordinates: { lat: number; lng: number };
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
   };
   contact: {
     phone: string[];
@@ -58,11 +62,33 @@ interface CollegeData {
     socialLife: number;
     totalReviews: number;
   };
-  fees: {
-    tuition: string;
-    hostel: string;
-    other: string;
-    total: string;
+  fee_structures: {
+    undergraduate?: {
+      [degreeType: string]: {
+        tuition: string;
+        mess?: string;
+        hostel?: string;
+        other?: string;
+        total: string;
+      }
+    };
+    postgraduate?: {
+      [degreeType: string]: {
+        tuition: string;
+        mess?: string;
+        hostel?: string;
+        other?: string;
+        total: string;
+      }
+    };
+    phd?: {
+      tuition: string;
+      mess?: string;
+      hostel?: string;
+      other?: string;
+      total: string;
+      stipend?: string;
+    };
   };
   placement: {
     averagePackage: string;
@@ -87,7 +113,10 @@ interface CollegeData {
       globalInternships: number;
       averageStipend: string;
     };
-    placementProcess: string[];
+    placementProcess: Array<{
+      step: string;
+      description: string;
+    }>;
     successStories: Array<{
       name: string;
       company: string;
@@ -108,7 +137,10 @@ interface CollegeData {
   };
   admissions: {
     applicationProcess: string;
-    steps: string[];
+    steps: Array<{
+      title: string;
+      description: string;
+    }>;
     importantDates: Array<{
       event: string;
       startDate: string;
@@ -117,12 +149,12 @@ interface CollegeData {
     }>;
     eligibility: Array<{
       program: string;
-      criteria: string[];
+      criteria: string;
     }>;
     requiredExams: Array<{
       name: string;
-      score: string;
-      weightage: string;
+      minScore: string;
+      description: string;
     }>;
     documents: string[];
     faqs: Array<{
@@ -132,18 +164,24 @@ interface CollegeData {
   };
   academics: {
     courses: {
-      undergraduate: string[];
-      postgraduate: string[];
-      phd: string[];
-    };
-    departments: Array<{
       name: string;
-      summary: string;
-      strengths: string[];
-      undergraduateCourses: string[];
-      postgraduateCourses: string[];
-      phdCourses: string[];
-    }>;
+      duration: string;
+      graduation_level: string;
+      degree: string;
+      classroom_size?: string;
+      hod?: {
+        name: string;
+        image: string;
+        mobile: string;
+        email: string;
+      };
+    }[];
+    certifications: {
+      name: string;
+      description: string;
+      duration: string;
+      fees: string;
+    }[];
     facultyCount: number;
     studentFacultyRatio: string;
   };
@@ -157,16 +195,25 @@ interface CollegeData {
       libraries: number;
     };
     facilities: string[];
-    hostel: {
+    hostels: Array<{
+      name: string;
       capacity: number;
       rooms: string;
       facilities: string[];
-    };
+      gallery: string[];
+      description: string;
+      reviews: Array<{
+        student: string;
+        batch: string;
+        comment: string;
+      }>;
+    }>;
     innovationCenters: Array<{
       name: string;
       focus: string;
       description: string;
       link?: string;
+      gallery: string[];
     }>;
     digitalInfrastructure: string[];
     sustainabilityInitiatives: Array<{
@@ -177,35 +224,6 @@ interface CollegeData {
       mode: string;
       frequency: string;
     }>;
-  };
-  socialMedia: {
-    official: {
-      facebook?: string;
-      twitter?: string;
-      instagram?: string;
-      youtube?: string;
-      linkedin?: string;
-    };
-  };
-  reviews: {
-    highlights: string[];
-    distribution: Array<{
-      label: string;
-      value: number;
-    }>;
-    testimonials: Array<{
-      name: string;
-      program: string;
-      batch: string;
-      content: string;
-      rating: number;
-    }>;
-  };
-  images: {
-    campus: string[];
-    hostel: string[];
-    facilities: string[];
-    events: string[];
   };
   campusExperience: {
     lifestyleHighlights: Array<{
@@ -234,30 +252,21 @@ interface CollegeData {
       name: string;
       description: string;
     }>;
-  };
-  alumniNetwork: {
-    totalAlumni: number;
-    notableAlumni: Array<{
-      name: string;
-      position: string;
-      company: string;
-      image: string;
-    }>;
+    residential: {
+      description: string;
+      facilities: string[];
+      rating: number;
+    };
   };
   clubs: Array<{
     name: string;
     description: string;
+    category: string;
+    members: number;
+    meetingFrequency: string;
     achievements: string[];
     contactEmail: string;
-    social: {
-      instagram?: string;
-      youtube?: string;
-      facebook?: string;
-      twitter?: string;
-      linkedin?: string;
-      discord?: string;
-      website?: string;
-    };
+    social: Partial<Record<keyof typeof socialIconConfig, string>>;
     mediaEmbed?: string;
   }>;
   events: Array<{
@@ -269,33 +278,64 @@ interface CollegeData {
     location: string;
     registrationLink: string;
     highlights: string[];
-    social: {
-      instagram?: string;
-      youtube?: string;
-      facebook?: string;
-      twitter?: string;
-      website?: string;
-      linkedin?: string;
-    };
+    social: Partial<Record<keyof typeof socialIconConfig, string>>;
     mediaEmbed?: string;
   }>;
+  reviews: {
+    highlights: string[];
+    distribution: Array<{
+      label: string;
+      value: number;
+    }>;
+    testimonials: Array<{
+      name: string;
+      program: string;
+      batch: string;
+      rating: number;
+      content: string;
+      date: string;
+      verified: boolean;
+    }>;
+  };
+  images: {
+    campus: Array<{
+      description: string;
+      url: string;
+      date: string;
+    }>;
+    hostel: Array<{
+      description: string;
+      url: string;
+      date: string;
+    }>;
+    facilities: Array<{
+      description: string;
+      url: string;
+      date: string;
+    }>;
+    events: Array<{
+      description: string;
+      url: string;
+      date: string;
+    }>;
+  };
+  alumniNetwork: {
+    totalAlumni: number;
+    notableAlumni: Array<{
+      name: string;
+      batch: string;
+      position: string;
+      company: string;
+      image: string;
+    }>;
+  };
   scholarships: Array<{
     name: string;
     amount: string;
     eligibility: string;
     description: string;
-  }>;
-  nearbyPlaces: Array<{
-    name: string;
-    distance: string;
-    type: string;
-  }>;
-  news: Array<{
-    title: string;
-    date: string;
-    category: string;
-    excerpt: string;
-    image: string;
+    deadline?: string;
+    applyLink?: string;
   }>;
   startups: Array<{
     name: string;
@@ -304,16 +344,27 @@ interface CollegeData {
     funding: string;
     image: string;
   }>;
-  funding: {
-    totalFunding: string;
-    sources: string[];
-    recentGrants: Array<{
-      amount: string;
-      source: string;
-      purpose: string;
-      year: number;
-    }>;
+  news: Array<{
+    title: string;
+    date: string;
+    category: string;
+    excerpt: string;
+    image: string;
+  }>;
+  socialMedia: {
+    official: {
+      facebook?: string;
+      twitter?: string;
+      instagram?: string;
+      youtube?: string;
+      linkedin?: string;
+    };
   };
+  nearbyPlaces: Array<{
+    name: string;
+    distance: string;
+    type: string;
+  }>;
 }
 
 const CollegePage = () => {
@@ -325,642 +376,245 @@ const CollegePage = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
-  // Mock data - In a real app, this would be fetched from an API
+
   useEffect(() => {
-    // Simulate API call
-    const mockCollegeData: CollegeData = {
-      id: parseInt(params.id as string),
-      name: 'Indian Institute of Technology Delhi',
-      shortName: 'IIT Delhi',
-      established: 1961,
-      type: 'Public',
-      category: 'Engineering',
-      location: {
-        address: 'Hauz Khas, New Delhi',
-        city: 'New Delhi',
-        state: 'Delhi',
-        pincode: '110016',
-        coordinates: { lat: 28.5449, lng: 77.1929 }
-      },
-      contact: {
-        phone: ['+91-11-2659-1999', '+91-11-2659-1000'],
-        email: ['info@iitd.ac.in', 'admissions@iitd.ac.in'],
-        website: 'https://www.iitd.ac.in',
-        admissionHelpline: '+91-11-2659-1945'
-      },
-      ratings: {
-        overall: 4.8,
-        academics: 4.9,
-        infrastructure: 4.7,
-        faculty: 4.8,
-        placement: 4.9,
-        hostelLife: 4.5,
-        socialLife: 4.6,
-        totalReviews: 2453
-      },
-      fees: {
-        tuition: '₹2,50,000',
-        hostel: '₹25,000',
-        other: '₹15,000',
-        total: '₹2,90,000'
-      },
-      placement: {
-        averagePackage: '₹25 LPA',
-        highestPackage: '₹2.1 Cr',
-        placementRate: 95,
-        medianPackage: '₹23 LPA',
-        topRecruiters: ['Google', 'Microsoft', 'Amazon', 'Goldman Sachs', 'McKinsey', 'Flipkart'],
-        internationalOffers: 32,
-        salaryTrends: [
-          { year: 2024, average: '₹25 LPA', highest: '₹2.1 Cr', placementRate: 95 },
-          { year: 2023, average: '₹24 LPA', highest: '₹1.8 Cr', placementRate: 94 },
-          { year: 2022, average: '₹22 LPA', highest: '₹1.6 Cr', placementRate: 92 },
-          { year: 2021, average: '₹20 LPA', highest: '₹1.4 Cr', placementRate: 90 }
-        ],
-        sectorDistribution: [
-          { sector: 'Technology & Product', percentage: 42 },
-          { sector: 'Consulting & Strategy', percentage: 21 },
-          { sector: 'Finance & Analytics', percentage: 16 },
-          { sector: 'Core Engineering', percentage: 14 },
-          { sector: 'Research & Higher Studies', percentage: 7 }
-        ],
-        internshipStats: {
-          totalInternships: 780,
-          ppoRate: 68,
-          globalInternships: 94,
-          averageStipend: '₹1.5 LPM'
-        },
-        placementProcess: [
-          'Pre-placement talks and company registrations open in August.',
-          'Students shortlist companies and submit resumes for profile-based shortlisting.',
-          'Aptitude tests, group discussions, and technical interviews run from November.',
-          'Final placement interviews are conducted in multiple slots through December and January.'
-        ],
-        successStories: [
-          {
-            name: 'Ishaan Malhotra',
-            company: 'Google Mountain View',
-            package: '$265K',
-            role: 'Software Engineer',
-            story:
-              'Secured a role through the international placement drive after leading projects at the Analytics Club and winning the ACM ICPC regionals.'
-          },
-          {
-            name: 'Megha Rao',
-            company: 'McKinsey & Company',
-            package: '₹42 LPA',
-            role: 'Business Analyst',
-            story:
-              'Converted a pre-placement offer following a summer internship where she co-authored a digital transformation roadmap for a Fortune 100 client.'
+    const fetchCollegeData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const collegeId = params.id;
+
+        // Helper function to handle API response format
+        const fetchAPI = async (url: string) => {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch ${url}`);
           }
-        ],
-        branchwise: [
-          {
-            name: 'Computer Science & Engineering',
-            averagePackage: '₹32 LPA',
-            medianPackage: '₹29 LPA',
-            highestPackage: '₹2.1 Cr',
-            placementRate: 99,
-            offers: 210,
-            topRoles: ['Software Engineer', 'AI/ML Engineer', 'Product Manager'],
-            recruiters: ['Google', 'Microsoft', 'Apple', 'LinkedIn']
-          },
-          {
-            name: 'Electrical Engineering',
-            averagePackage: '₹24 LPA',
-            medianPackage: '₹22 LPA',
-            highestPackage: '₹78 LPA',
-            placementRate: 96,
-            offers: 185,
-            topRoles: ['Hardware Engineer', 'Energy Consultant', 'Analog Design Engineer'],
-            recruiters: ['Texas Instruments', 'Qualcomm', 'Samsung', 'GE']
-          },
-          {
-            name: 'Mechanical Engineering',
-            averagePackage: '₹18 LPA',
-            medianPackage: '₹16 LPA',
-            highestPackage: '₹52 LPA',
-            placementRate: 93,
-            offers: 160,
-            topRoles: ['Manufacturing Engineer', 'Automotive R&D Engineer', 'Supply Chain Analyst'],
-            recruiters: ['Bosch', 'Mahindra', 'Rolls-Royce', 'Tata Motors']
-          },
-          {
-            name: 'Mathematics & Computing',
-            averagePackage: '₹28 LPA',
-            medianPackage: '₹25 LPA',
-            highestPackage: '₹1.2 Cr',
-            placementRate: 98,
-            offers: 140,
-            topRoles: ['Quant Analyst', 'Data Scientist', 'Risk Strategist'],
-            recruiters: ['Goldman Sachs', 'JP Morgan', 'Morgan Stanley', 'DE Shaw']
-          },
-          {
-            name: 'Chemical Engineering',
-            averagePackage: '₹16 LPA',
-            medianPackage: '₹14 LPA',
-            highestPackage: '₹39 LPA',
-            placementRate: 91,
-            offers: 120,
-            topRoles: ['Process Engineer', 'Sustainability Consultant', 'R&D Scientist'],
-            recruiters: ['ExxonMobil', 'Shell', 'ITC', 'Honeywell']
+          const result = await response.json();
+          if (!result.success) {
+            console.log(result);
+            throw new Error(result.message || 'API request failed');
           }
-        ]
-      },
-      admissions: {
-        applicationProcess:
-          'Admissions at IIT Delhi follow national-level entrance examinations with centralized counselling and institute-level verification.',
-        steps: [
-          'Qualify JEE Main and appear for JEE Advanced with a competitive All India Rank.',
-          'Register for the Joint Seat Allocation Authority (JoSAA) counselling and complete choice filling.',
-          'Lock preferred branches during the counselling window and await seat allotment results.',
-          'Report to IIT Delhi for document verification, fee payment, and orientation formalities.'
-        ],
-        importantDates: [
-          { event: 'JEE Main Session 1', startDate: '2023-01-24', endDate: '2023-02-01', status: 'Closed' },
-          { event: 'JEE Advanced Examination', startDate: '2023-06-04', endDate: '2023-06-04', status: 'Closed' },
-          { event: 'JoSAA Counselling', startDate: '2023-06-19', endDate: '2023-07-31', status: 'Closed' },
-          { event: 'Institute Reporting', startDate: '2023-08-10', endDate: '2023-08-15', status: 'Ongoing' },
-          { event: 'Orientation & Induction', startDate: '2023-08-20', endDate: '2023-08-25', status: 'Upcoming' }
-        ],
-        eligibility: [
-          {
-            program: 'B.Tech Programmes',
-            criteria: [
-              'Minimum 75% marks in Class XII (65% for SC/ST candidates).',
-              'Mandatory subjects: Physics, Chemistry, Mathematics.',
-              'Valid JEE Advanced rank within the opening and closing ranges announced by JoSAA.'
+          return result.data;
+        };
+
+        // Fetch all data in parallel
+        const [
+          mainData,
+          reviewsData,
+          ratingsData,
+          newsData
+        ] = await Promise.all([
+          fetchAPI(`http://localhost:8000/api/v1/colleges/${collegeId}`),
+          fetchAPI(`http://localhost:8000/api/v1/colleges/${collegeId}/reviews`),
+          fetchAPI(`http://localhost:8000/api/v1/colleges/${collegeId}/ratings`),
+          fetchAPI(`http://localhost:8000/api/v1/colleges/${collegeId}/news`)
+        ]);
+
+        // Map the backend response to the frontend CollegeData structure
+        const collegeData: CollegeData = {
+          id: mainData.college_details.id,
+          name: mainData.college_details.name,
+          shortName: mainData.college_details.shortName,
+          aboutHTML: mainData.college_details.aboutHTML,
+          established: mainData.college_details.established,
+          type: mainData.college_details.type,
+          category: mainData.college_details.category,
+          location: mainData.college_details.location,
+          contact: mainData.college_details.contact,
+          
+          ratings: ratingsData,
+          
+          fee_structures: mainData.college_fee_structure,
+          
+          placement: {
+            averagePackage: mainData.college_placements.averagePackage,
+            highestPackage: mainData.college_placements.highestPackage,
+            placementRate: mainData.college_placements.placementRate,
+            medianPackage: mainData.college_placements.medianPackage,
+            topRecruiters: mainData.college_placements.topRecruiters,
+            internationalOffers: mainData.college_placements.internationalOffers,
+            salaryTrends: mainData.college_placements.salaryTrends,
+            sectorDistribution: mainData.college_placements.sectorDistribution,
+            internshipStats: mainData.college_placements.internshipStats,
+            placementProcess: [
+              { step: 'Pre-Placement Talks', description: 'Companies present their profiles' },
+              { step: 'Resume Shortlisting', description: 'Based on CGPA and skills' },
+              { step: 'Written Test', description: 'Aptitude and technical assessment' },
+              { step: 'Group Discussion', description: 'Communication and teamwork' },
+              { step: 'Interviews', description: 'Technical and HR rounds' },
+              { step: 'Offer Letter', description: 'Final selection and onboarding' }
+            ],
+            successStories: mainData.college_placements.successStories,
+            branchwise: mainData.college_branch_placements.branches
+          },
+          
+          admissions: {
+            applicationProcess: mainData.college_admissions.overview,
+            steps: [
+              { title: 'Step 1: Online Application', description: 'Fill the application form and upload documents.' },
+              { title: 'Step 2: Entrance Exam', description: 'Appear for JEE Main/GATE/CAT based on program.' },
+              { title: 'Step 3: Counseling', description: 'Attend counseling sessions for seat allotment.' },
+              { title: 'Step 4: Document Verification', description: 'Submit original documents for verification.' },
+              { title: 'Step 5: Fee Payment', description: 'Pay the admission fee to confirm your seat.' },
+              { title: 'Step 6: Registration', description: 'Complete registration and join orientation.' }
+            ],
+            importantDates: mainData.college_admissions.programs['B.Tech']?.importantDates || [],
+            eligibility: (mainData.college_admissions.programs['B.Tech']?.eligibility || []).map((criteria: string) => ({
+              program: 'B.Tech',
+              criteria: criteria
+            })),
+            requiredExams: [
+              { name: 'JEE Main', minScore: '75 percentile', description: 'For B.Tech admissions' },
+              { name: 'GATE', minScore: 'Valid score', description: 'For M.Tech admissions' }
+            ],
+            documents: mainData.college_admissions.programs['B.Tech']?.requiredDocuments || [],
+            faqs: [
+              { question: 'What is the admission process?', answer: mainData.college_admissions.overview },
+              { question: 'What documents are required?', answer: 'Please check the required documents section for your program.' }
             ]
           },
-          {
-            program: 'M.Tech Programmes',
-            criteria: [
-              'Bachelor’s degree in relevant discipline with at least 60% aggregate.',
-              'Valid GATE score meeting the departmental cut-off.',
-              'Departmental interview for certain specialisations.'
-            ]
+          
+          academics: {
+            courses: mainData.college_academics.courses,
+            certifications: mainData.college_academics.certifications,
+            facultyCount: mainData.college_academics.facultyCount,
+            studentFacultyRatio: mainData.college_academics.studentFacultyRatio
           },
-          {
-            program: 'MBA Programmes',
-            criteria: [
-              'Bachelor’s degree with minimum 60% aggregate.',
-              'Competitive CAT percentile (98+ recommended).',
-              'Personal interview and writing ability test conducted by DMS, IIT Delhi.'
-            ]
-          }
-        ],
-        requiredExams: [
-          { name: 'JEE Advanced', score: 'AIR within top 5000', weightage: '60%' },
-          { name: 'Class XII Board Exams', score: 'Minimum 75% aggregate', weightage: '10%' },
-          { name: 'JoSAA Counselling', score: 'Seat allotment & document verification', weightage: '30%' }
-        ],
-        documents: [
-          'JEE Advanced admit card and rank card',
-          'Class X and XII mark sheets and passing certificates',
-          'Category, PwD, or EWS certificate (if applicable)',
-          'Passport-sized colour photographs',
-          'Government-issued photo ID and proof of address'
-        ],
-        faqs: [
-          {
-            question: 'Is there any relaxation for reserved categories?',
-            answer:
-              'IIT Delhi follows the Government of India reservation policy with relaxed cut-offs, fee concessions, and preparatory courses for eligible categories.'
+          
+          infrastructure: {
+            overview: mainData.college_infrastructure.overview,
+            keyHighlights: mainData.college_infrastructure.keyHighlights,
+            campus: mainData.college_infrastructure.campus,
+            facilities: mainData.college_infrastructure.facilities,
+            hostels: mainData.college_infrastructure.hostels,
+            innovationCenters: mainData.college_infrastructure.innovationCenters,
+            digitalInfrastructure: mainData.college_infrastructure.digitalInfrastructure,
+            sustainabilityInitiatives: mainData.college_infrastructure.sustainabilityInitiatives,
+            transport: mainData.college_infrastructure.transport
           },
-          {
-            question: 'Can international students apply?',
-            answer:
-              'International candidates can apply through the DASA scheme, ICCR scholarships, or specific MoUs that IIT Delhi maintains with partner institutions.'
-          }
-        ]
-      },
-      academics: {
-        courses: {
-          undergraduate: ['B.Tech Computer Science', 'B.Tech Mechanical', 'B.Tech Electrical', 'B.Tech Civil'],
-          postgraduate: ['M.Tech', 'MBA', 'M.Sc', 'M.Des'],
-          phd: ['Ph.D in Engineering', 'Ph.D in Science', 'Ph.D in Management']
-        },
-        departments: [
-          {
-            name: 'Computer Science & Engineering',
-            summary: 'Advanced computing, artificial intelligence, and scalable systems research with strong industry partnerships.',
-            strengths: ['AI & ML Centers', 'High Performance Computing Lab', 'Startup Incubation Support'],
-            undergraduateCourses: ['B.Tech Computer Science and Engineering', 'Dual Degree (B.Tech + M.Tech) Computer Science'],
-            postgraduateCourses: ['M.Tech Computer Science & Engineering', 'M.S.(R) Computer Science'],
-            phdCourses: ['Ph.D Computer Science & Engineering']
+          
+          campusExperience: {
+            lifestyleHighlights: mainData.college_campus_experience.lifestyleHighlights,
+            dailyTimeline: [
+              { time: '7:00 AM', activity: 'Morning routine & breakfast' },
+              { time: '9:00 AM', activity: 'Classes begin' },
+              { time: '1:00 PM', activity: 'Lunch break' },
+              { time: '2:00 PM', activity: 'Afternoon sessions & labs' },
+              { time: '5:00 PM', activity: 'Sports, clubs, or library' },
+              { time: '8:00 PM', activity: 'Dinner and evening activities' }
+            ],
+            supportServices: mainData.college_campus_experience.supportServices,
+            diningOptions: mainData.college_campus_experience.diningOptions,
+            sportsAndFitness: mainData.college_campus_experience.sportsAndFitness,
+            wellnessPrograms: mainData.college_campus_experience.wellnessPrograms,
+            residential: {
+              description: 'Modern hostel facilities with all amenities',
+              facilities: ['Wi-Fi', 'Laundry', 'Common rooms', 'Mess'],
+              rating: 4.0
+            }
           },
-          {
-            name: 'Electrical Engineering',
-            summary: 'Power systems, microelectronics, and communications programs with modern laboratories and national projects.',
-            strengths: ['VLSI & Nanoelectronics Lab', 'Smart Grid Research', '5G & IoT Testbeds'],
-            undergraduateCourses: ['B.Tech Electrical Engineering', 'B.Tech Engineering Physics'],
-            postgraduateCourses: ['M.Tech Power Electronics', 'M.Tech Communications Engineering'],
-            phdCourses: ['Ph.D Electrical Engineering']
+          
+          clubs: mainData.college_clubs.clubs.map((club: any) => ({
+            name: club.name,
+            description: club.description,
+            category: 'Technical',
+            members: 150,
+            meetingFrequency: 'Weekly',
+            achievements: club.achievements || [],
+            contactEmail: club.contactEmail,
+            social: club.social || {},
+            mediaEmbed: club.mediaEmbed
+          })),
+          
+          events: mainData.college_events.events.map((event: any) => ({
+            name: event.name,
+            type: event.type,
+            description: event.description,
+            date: event.date,
+            image: event.image,
+            location: event.location,
+            registrationLink: event.registrationLink,
+            highlights: event.highlights || [],
+            social: event.social || {},
+            mediaEmbed: event.mediaEmbed
+          })),
+          
+          reviews: {
+            highlights: reviewsData.highlights,
+            distribution: reviewsData.distribution,
+            testimonials: reviewsData.testimonials.map((t: any) => ({
+              name: t.name,
+              program: t.program,
+              batch: t.batch,
+              rating: t.rating,
+              content: t.content,
+              date: '2024',
+              verified: true
+            }))
           },
-          {
-            name: 'Mechanical Engineering',
-            summary: 'Focus on design, manufacturing, thermal sciences, and robotics with extensive cross-disciplinary collaborations.',
-            strengths: ['Robotics & Automation Center', 'Advanced Manufacturing Lab', 'Thermal Systems Research'],
-            undergraduateCourses: ['B.Tech Mechanical Engineering', 'B.Tech Production & Industrial Engineering'],
-            postgraduateCourses: ['M.Tech Design Engineering', 'M.Tech Thermal Engineering'],
-            phdCourses: ['Ph.D Mechanical Engineering']
+          
+          images: mainData.college_gallery.images,
+          
+          alumniNetwork: {
+            totalAlumni: mainData.college_alumni.totalAlumni,
+            notableAlumni: mainData.college_alumni.notableAlumni.map((alumni: any) => ({
+              name: alumni.name,
+              batch: alumni.batch,
+              position: alumni.position,
+              company: alumni.company,
+              image: alumni.image
+            }))
           },
-          {
-            name: 'Civil Engineering',
-            summary: 'Sustainable infrastructure, transportation, and water resources engineering projects impacting smart city initiatives.',
-            strengths: ['Structural Dynamics Lab', 'Smart Cities Mission Projects', 'Geospatial Research Hub'],
-            undergraduateCourses: ['B.Tech Civil Engineering'],
-            postgraduateCourses: ['M.Tech Structural Engineering', 'M.Tech Transportation Engineering'],
-            phdCourses: ['Ph.D Civil Engineering']
-          },
-          {
-            name: 'Chemical Engineering',
-            summary: 'Bridges fundamental sciences with industrial processes, sustainability goals, and new materials development.',
-            strengths: ['Renewable Energy Processes', 'Process Simulation Suite', 'Materials Innovation Center'],
-            undergraduateCourses: ['B.Tech Chemical Engineering'],
-            postgraduateCourses: ['M.Tech Process Engineering', 'M.Tech Polymer Science & Technology'],
-            phdCourses: ['Ph.D Chemical Engineering']
-          },
-          {
-            name: 'Aerospace Engineering',
-            summary: 'Aerodynamics, propulsion, avionics, and space technologies supported by world-class testing facilities.',
-            strengths: ['Wind Tunnel Facility', 'UAV & Space Systems Lab', 'ISRO & DRDO Projects'],
-            undergraduateCourses: ['B.Tech Aerospace Engineering'],
-            postgraduateCourses: ['M.Tech Aerodynamics & Propulsion', 'M.Tech Flight Mechanics & Control'],
-            phdCourses: ['Ph.D Aerospace Engineering']
-          }
-        ],
-        facultyCount: 450,
-        studentFacultyRatio: '1:8'
-      },
-      infrastructure: {
-        overview:
-          'IIT Delhi’s 325-acre smart campus blends academic rigor with collaborative spaces, innovation districts, and student-centric amenities designed to support round-the-clock learning and community life.',
-        keyHighlights: [
-          'Integrated academic, hostel, and recreational zones within a 10-minute walk',
-          '24/7 digitized access to libraries, labs, and collaborative studios',
-          'IoT-enabled sustainability initiatives cutting emissions by 35%'
-        ],
-        campus: {
-          area: '325 acres',
-          buildings: 45,
-          labs: 120,
-          libraries: 6
-        },
-        facilities: ['Wi-Fi Campus', 'Sports Complex', 'Medical Center', 'Cafeterias', 'Bank', 'Post Office'],
-        hostel: {
-          capacity: 8000,
-          rooms: 'Single & Double',
-          facilities: ['Wi-Fi', 'Mess', 'Common Room', 'Gym', 'Laundry']
-        },
-        innovationCenters: [
-          {
-            name: 'Technology Business Incubator',
-            focus: 'Startup acceleration & seed funding support',
-            description: 'Provides co-working space, mentorship, and investor connects for student-led ventures.',
-            link: 'https://tbi.iitd.ac.in'
-          },
-          {
-            name: 'Centre for AI & Robotics',
-            focus: 'Artificial Intelligence & Autonomous Systems',
-            description: 'Houses advanced computing clusters, robotics labs, and industry-sponsored research pods.',
-            link: 'https://cair.iitd.ac.in'
-          },
-          {
-            name: 'Sustainable Energy Lab',
-            focus: 'Renewable energy & climate tech',
-            description: 'Dedicated facility for solar, wind, and energy storage research in partnership with global energy players.',
-            link: 'https://sustenergy.iitd.ac.in'
-          }
-        ],
-        digitalInfrastructure: [
-          '10 Gbps backbone network with campus-wide Wi-Fi 6 coverage',
-          'Smart classrooms equipped with AR/VR pods and lecture capture systems',
-          'AI-enabled library discovery system with 24/7 digital access',
-          'Student super-app consolidating attendance, courseware, and campus services'
-        ],
-        sustainabilityInitiatives: [
-          {
-            title: 'Net-Zero by 2030 Roadmap',
-            impact: 'Current campus emissions already reduced by 35% via solar rooftops and smart metering.'
-          },
-          {
-            title: 'Water Positive Campus',
-            impact: 'Rainwater harvesting, greywater recycling, and AI-monitored usage save 18 million litres annually.'
-          },
-          {
-            title: 'Zero-Waste Hostels',
-            impact: 'Segregated waste streams with biogas plants powering hostel kitchens.'
-          }
-        ],
-        transport: [
-          { mode: 'EV Shuttle Network', frequency: 'Runs every 7 minutes covering all hostels and departments' },
-          { mode: 'City Bus Interchange', frequency: 'Dedicated DTC services at campus gate during peak hours' },
-          { mode: 'Cycling Infrastructure', frequency: '700+ shared bicycles with docking stations across campus' }
-        ]
-      },
-      socialMedia: {
-        official: {
-          facebook: 'https://facebook.com/iitdelhi',
-          twitter: 'https://twitter.com/iitdelhi',
-          instagram: 'https://instagram.com/iitdelhi',
-          youtube: 'https://youtube.com/iitdelhi',
-          linkedin: 'https://linkedin.com/school/iitdelhi'
-        }
-      },
-      reviews: {
-        highlights: [
-          'Faculty actively encourage interdisciplinary research and innovation.',
-          'Robust alumni mentorship ensures industry exposure and networking.',
-          'Student bodies run over 200 clubs that keep the campus vibrant year-round.'
-        ],
-        distribution: [
-          { label: 'Academics', value: 96 },
-          { label: 'Placements', value: 94 },
-          { label: 'Infrastructure', value: 91 },
-          { label: 'Campus Life', value: 89 },
-          { label: 'Value for Money', value: 88 }
-        ],
-        testimonials: [
-          {
-            name: 'Ananya Verma',
-            program: 'B.Tech Computer Science',
-            batch: 'Class of 2025',
-            content:
-              'The curriculum is rigorous but the ecosystem pushes you to innovate. Access to labs and mentorship helped me co-found a startup in my second year.',
-            rating: 5
-          },
-          {
-            name: 'Rahul Mehta',
-            program: 'MBA',
-            batch: 'Class of 2023',
-            content:
-              'Industry projects, leadership labs, and the peer group at DMS IIT Delhi prepared me for consulting roles with top firms.',
-            rating: 4
-          },
-          {
-            name: 'Sneha Kulkarni',
-            program: 'M.Tech Mechanical Engineering',
-            batch: 'Class of 2024',
-            content:
-              'International collaborations and fully-equipped research centres made it easy to pursue cutting-edge work in sustainable manufacturing.',
-            rating: 5
-          }
-        ]
-      },
-      images: {
-        campus: ['/api/placeholder/800/600', '/api/placeholder/800/600', '/api/placeholder/800/600'],
-        hostel: ['/api/placeholder/800/600', '/api/placeholder/800/600'],
-        facilities: ['/api/placeholder/800/600', '/api/placeholder/800/600', '/api/placeholder/800/600'],
-        events: ['/api/placeholder/800/600', '/api/placeholder/800/600']
-      },
-      campusExperience: {
-        lifestyleHighlights: [
-          {
-            title: 'Interdisciplinary Learning Pods',
-            description: 'Evenings see cross-disciplinary teams collaborating on hackathons, design jams, and policy labs.'
-          },
-          {
-            title: 'Vibrant Cultural Calendar',
-            description: 'From open mic nights to classical concerts, multiple student societies host performances every week.'
-          },
-          {
-            title: 'Nightlife that Nurtures',
-            description: '24/7 reading rooms, late-night cafes, and safe mobility ensure productivity beyond classroom hours.'
-          }
-        ],
-        dailyTimeline: [
-          { time: '06:30', activity: 'Joggers, cyclists, and sports teams take over the athletics track and fitness trails.' },
-          { time: '09:00', activity: 'Core lectures and lab sessions kick off across departments with blended learning setups.' },
-          { time: '13:00', activity: 'Hostel messes and food courts serve regional cuisines alongside healthy salad bars.' },
-          { time: '17:30', activity: 'Clubs meet for rehearsals, coding sprints, debating leagues, and social impact initiatives.' },
-          { time: '22:00', activity: 'Study lounges, maker spaces, and the central library remain abuzz with collaborative projects.' }
-        ],
-        supportServices: [
-          {
-            name: 'Career Development Cell',
-            description: 'Resume clinics, mock interviews, and sector-specific mentoring led by alumni and industry experts.'
-          },
-          {
-            name: 'Student Wellbeing Office',
-            description: 'On-call counsellors, wellness workshops, and mental health first-aiders deployed hostel-wise.'
-          },
-          {
-            name: 'Academic Success Studio',
-            description: 'Peer-assisted learning modules, writing labs, and analytics-backed course planning support.'
-          }
-        ],
-        diningOptions: [
-          { name: 'Himalayan Hub', type: 'Multi-cuisine Food Court', signature: 'Pan-Asian live counters & organic salad bar', openTill: '01:00 AM' },
-          { name: 'Nilgiri Mess', type: 'Hostel Dining', signature: 'Local farm-to-table menu with weekly millet specials', openTill: '10:00 PM' },
-          { name: 'The Innovation Café', type: 'Grab-n-Go & Specialty Coffee', signature: 'Nitro brews, protein bowls, keto-friendly snacks', openTill: '02:00 AM' }
-        ],
-        sportsAndFitness: [
-          { name: 'Olympic-size Aquatic Complex', details: 'Heated pool with underwater cameras and FINA-compliant lanes.' },
-          { name: 'High-Performance Gym', details: 'Strength & conditioning arena with wearable tech tracking and physiotherapy suite.' },
-          { name: 'Multi-sport Indoor Arena', details: 'Badminton, squash, climbing wall, and esports lab under one roof.' }
-        ],
-        wellnessPrograms: [
-          { name: 'Mindful Mondays', description: 'Guided meditation and breathwork sessions facilitated by certified practitioners.' },
-          { name: 'Fit@IITD', description: 'Campus-wide step challenges, sports leagues, and personalised fitness coaching.' },
-          { name: 'Thrive Circles', description: 'Peer-led support groups discussing academic resilience and work-life balance.' }
-        ]
-      },
-      alumniNetwork: {
-        totalAlumni: 50000,
-        notableAlumni: [
-          { name: 'Sundar Pichai', position: 'CEO', company: 'Google', image: '/api/placeholder/100/100' },
-          { name: 'Vinod Khosla', position: 'Co-founder', company: 'Sun Microsystems', image: '/api/placeholder/100/100' },
-          { name: 'Rajat Gupta', position: 'Former MD', company: 'McKinsey', image: '/api/placeholder/100/100' }
-        ]
-      },
-      clubs: [
-        {
-          name: 'Robotics Club',
-          description: 'Designs autonomous systems, humanoids, and swarm robotics while mentoring school outreach teams.',
-          achievements: [
-            'ABU Robocon India 2024 champions with three innovation laurels',
-            'Published two IEEE papers on modular swarm navigation in 2023'
-          ],
-          contactEmail: 'robotics.club@iitd.ac.in',
-          social: {
-            instagram: 'https://www.instagram.com/iitdrobotics/',
-            youtube: 'https://www.youtube.com/@iitdrobotics',
-            discord: 'https://discord.gg/robotics-iitd',
-            website: 'https://robotics.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/0uaquGZKx_0'
-        },
-        {
-          name: 'Coding Club',
-          description: 'Competitive programming, open-source cohorts, and hackathons powering the institute tech community.',
-          achievements: [
-            'Ranked #2 globally in ICPC 2024 Asia-West regionals',
-            'Maintains 40+ open-source repositories adopted by startups'
-          ],
-          contactEmail: 'coding.club@iitd.ac.in',
-          social: {
-            twitter: 'https://twitter.com/iitdcoding',
-            linkedin: 'https://www.linkedin.com/company/iitd-coding-club/',
-            website: 'https://codingclub.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/PkZNo7MFNFg'
-        },
-        {
-          name: 'Entrepreneurship & Leadership Cell',
-          description: 'Startup accelerator, mentorship network, and angel connect platform run by student founders.',
-          achievements: [
-            'Incubated 22 funded startups in the last three cohorts',
-            'Hosted Asia’s largest campus investor day with 180 VCs'
-          ],
-          contactEmail: 'els.iitd@iitd.ac.in',
-          social: {
-            instagram: 'https://www.instagram.com/iitd_elc/',
-            linkedin: 'https://www.linkedin.com/company/iitd-entrepreneurship-cell/',
-            facebook: 'https://www.facebook.com/iitdelhi.ecell',
-            website: 'https://ecell.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/t6fdJ5N0X9Q'
-        },
-        {
-          name: 'Music Society (MeLa)',
-          description: 'Choirs, bands, and producers collaborating on fusions, EDM, and classical showcases.',
-          achievements: [
-            'Released “Raaga Reloaded” EP featuring 15 campus artists',
-            'Winners of Mood Indigo “Battle of Bands” 2023'
-          ],
-          contactEmail: 'music.society@iitd.ac.in',
-          social: {
-            instagram: 'https://www.instagram.com/mela_iitd/',
-            youtube: 'https://www.youtube.com/channel/UCMeLaSessions',
-            website: 'https://mela.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/7NOSDKb0HlU'
-        },
-        {
-          name: 'Lenscraft Collective',
-          description: 'Photography and film-making storytellers documenting campus, culture, and research breakthroughs.',
-          achievements: [
-            'Curated India’s first student-run XR photo festival',
-            'Official photography partner for 30+ national events'
-          ],
-          contactEmail: 'lenscraft@iitd.ac.in',
-          social: {
-            instagram: 'https://www.instagram.com/iitd_lenscraft/',
-            youtube: 'https://www.youtube.com/@lenscraftfilms',
-            website: 'https://lenscraft.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/1La4QzGeaaQ'
-        },
-        {
-          name: 'Stagecraft Society',
-          description: 'Theatre troupe producing dramas, improv, and street plays on social impact narratives.',
-          achievements: [
-            'Best script & ensemble at IIT Bombay’s StageFest 2024',
-            'Styled 12-city street play tour on sustainability awareness'
-          ],
-          contactEmail: 'stagecraft@iitd.ac.in',
-          social: {
-            facebook: 'https://www.facebook.com/stagecraftiitd',
-            instagram: 'https://www.instagram.com/stagecraft_iitd/',
-            youtube: 'https://www.youtube.com/@stagecraftplays'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/JXh1Gd2N4Vg'
-        }
-      ],
-      events: [
-        {
-          name: 'Rendezvous',
-          type: 'Cultural Fest',
-          description: 'Four-day celebration with concerts, workshops, and 180+ competitions attracting 120K+ attendees.',
-          date: '2024-03-15',
-          image: '/api/placeholder/400/300',
-          location: 'Main Campus • Open Air Theatre & Cultural Blocks',
-          registrationLink: 'https://rendezvous.iitd.ac.in/register',
-          highlights: [
-            'Headliner nights featuring global indie and fusion artists',
-            'Experiential villages, creator meetups, and interactive art trails',
-            'Flagship competitions: Blitzkrieg, Stage Play, Campus Princess'
-          ],
-          social: {
-            instagram: 'https://www.instagram.com/rendezvousiitd/',
-            youtube: 'https://www.youtube.com/@rendezvousiitd',
-            facebook: 'https://www.facebook.com/rendezvousiitd',
-            website: 'https://rendezvous.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/0uaquGZKx_0'
-        },
-        {
-          name: 'Tryst',
-          type: 'Tech Fest',
-          description: 'National technology conclave with keynote speakers, makeathons, and industry showcases.',
-          date: '2024-02-20',
-          image: '/api/placeholder/400/300',
-          location: 'Convention Centre & Research Park',
-          registrationLink: 'https://tryst.iitd.ac.in/register',
-          highlights: [
-            '48-hour flagship hackathon with $25K prize pool',
-            'Hands-on labs in AI, quantum, space tech, and climate action',
-            'Deep-tech expo co-hosted with 35 research labs and unicorns'
-          ],
-          social: {
-            twitter: 'https://twitter.com/trystiitd',
-            linkedin: 'https://www.linkedin.com/company/tryst-iit-delhi/',
-            youtube: 'https://www.youtube.com/@trystiitdelhi',
-            website: 'https://tryst.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/wX78iKhInsc'
-        },
-        {
-          name: 'E-Summit',
-          type: 'Startup Summit',
-          description: 'Entrepreneurship summit uniting founders, investors, and policymakers for curated masterclasses.',
-          date: '2024-09-05',
-          image: '/api/placeholder/400/300',
-          location: 'Technology Business Incubator & Lecture Hall Complex',
-          registrationLink: 'https://esummit.iitd.ac.in/register',
-          highlights: [
-            'Reverse pitch arena with 60+ venture funds',
-            'Founder fireside chats with unicorn leaders and alumni',
-            'Micro accelerator demo day featuring 15 campus startups'
-          ],
-          social: {
-            instagram: 'https://www.instagram.com/esummitiitd/',
-            linkedin: 'https://www.linkedin.com/company/iitd-esummit/',
-            website: 'https://esummit.iitd.ac.in'
-          },
-          mediaEmbed: 'https://www.youtube.com/embed/t6fdJ5N0X9Q'
-        }
-      ],
-      scholarships: [
-        { name: 'Merit Scholarship', amount: '₹50,000', eligibility: 'Top 10%', description: 'For meritorious students' },
-        { name: 'Need-based Aid', amount: '₹1,00,000', eligibility: 'Family income < 5 LPA', description: 'Financial assistance' }
-      ],
-      nearbyPlaces: [
-        { name: 'Green Park Metro', distance: '2 km', type: 'Transport' },
-        { name: 'Deer Park', distance: '1 km', type: 'Recreation' },
-        { name: 'INA Market', distance: '3 km', type: 'Shopping' }
-      ],
-      news: [
-        { title: 'IIT Delhi ranks #1 in engineering', date: '2024-01-15', category: 'Rankings', excerpt: 'Latest NIRF rankings released', image: '/api/placeholder/300/200' },
-        { title: 'New AI research center inaugurated', date: '2024-01-10', category: 'Research', excerpt: 'State-of-the-art facility opened', image: '/api/placeholder/300/200' }
-      ],
-      startups: [
-        { name: 'Zomato', founder: 'Deepinder Goyal', description: 'Food delivery platform', funding: '$2B+', image: '/api/placeholder/200/150' },
-        { name: 'Paytm', founder: 'Vijay Shekhar Sharma', description: 'Digital payments', funding: '$3B+', image: '/api/placeholder/200/150' }
-      ],
-      funding: {
-        totalFunding: '₹500 Cr',
-        sources: ['Government of India', 'Private Donations', 'Research Grants'],
-        recentGrants: [
-          { amount: '₹50 Cr', source: 'MHRD', purpose: 'Infrastructure Development', year: 2024 },
-          { amount: '₹25 Cr', source: 'DST', purpose: 'Research Projects', year: 2023 }
-        ]
+          
+          scholarships: mainData.college_scholarships.scholarships.map((s: any) => ({
+            name: s.name,
+            amount: s.amount,
+            eligibility: s.eligibility,
+            description: s.description,
+            deadline: s.deadline,
+            applyLink: s.applyLink
+          })),
+          
+          startups: mainData.college_startups.startups.map((s: any) => ({
+            name: s.name,
+            founder: s.founder,
+            description: s.description,
+            funding: s.funding,
+            image: s.image
+          })),
+          
+          news: newsData.items.map((n: any) => ({
+            title: n.title,
+            date: n.date,
+            category: n.category,
+            excerpt: n.excerpt,
+            image: n.image
+          })),
+          
+          socialMedia: mainData.college_social_media,
+          
+          nearbyPlaces: mainData.college_nearby_places.places.map((p: any) => ({
+            name: p.name,
+            distance: p.distance,
+            type: p.type
+          }))
+        };
+
+        setCollege(collegeData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch college data');
+        console.error('Error fetching college data:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    setCollege(mockCollegeData);
+    fetchCollegeData();
   }, [params.id]);
 
   useEffect(() => {
@@ -970,12 +624,41 @@ const CollegePage = () => {
   }, [college]);
 
   useEffect(() => {
-    if (college && college.academics.departments.length > 0) {
-      setSelectedDepartment((prev) => prev || college.academics.departments[0].name);
+    if (college && college.academics.courses.length > 0) {
+      setSelectedDepartment((prev) => prev || college.academics.courses[0].name);
     }
   }, [college]);
 
-  if (!college) {
+  // Add filter options for courses and certifications
+  const filterOptions = [
+    { id: 'all', label: 'All Programs', icon: BookOpen },
+    { id: 'B.Tech', label: 'B.Tech', icon: GraduationCap },
+    { id: 'B.Sc', label: 'B.Sc', icon: GraduationCap },
+    { id: 'M.Tech', label: 'M.Tech', icon: Award },
+    { id: 'PhD', label: 'PhD', icon: Trophy },
+    { id: 'certifications', label: 'Certifications', icon: CheckCircle2 }
+  ];
+
+  const filteredCourses = college && selectedFilter === 'all' 
+    ? college.academics.courses 
+    : selectedFilter === 'certifications'
+    ? []
+    : college?.academics.courses.filter(course => course.degree === selectedFilter);
+
+  const showCertifications = selectedFilter === 'all' || selectedFilter === 'certifications';
+
+  // Define the type for degree parameter
+  const getDegreeColor = (degree: 'B.Tech' | 'B.Sc' | 'M.Tech' | 'PhD' | string) => {
+    const colors: Record<string, string> = {
+      'B.Tech': 'blue',
+      'B.Sc': 'indigo',
+      'M.Tech': 'green',
+      'PhD': 'purple'
+    };
+    return colors[degree] || 'gray';
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -984,6 +667,32 @@ const CollegePage = () => {
         </div>
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 text-red-600">
+            <svg className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading College Data</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!college) {
+    return null;
   }
 
   const getStatusBadgeClasses = (
@@ -1058,9 +767,9 @@ const CollegePage = () => {
 
   const timelineIcons = [Sun, BookOpen, Utensils, Activity, Moon];
 
-  const selectedDepartmentData = college.academics.departments.find(
-    (dept) => dept.name === selectedDepartment
-  );
+  // const selectedDepartmentData = college.academics.departments.find(
+  //   (dept) => dept.name === selectedDepartment
+  // );
 
   const renderSocialLinks = (
     social: Partial<Record<keyof typeof socialIconConfig, string | undefined>>
@@ -1164,10 +873,6 @@ const CollegePage = () => {
                     <span className="opacity-75">Faculty:</span>
                     <span className="font-semibold">{college.academics.facultyCount}+</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="opacity-75">Annual Fees:</span>
-                    <span className="font-semibold">{college.fees.total}</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -1210,69 +915,76 @@ const CollegePage = () => {
                 {/* About Section */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h2 className="text-2xl font-bold text-gray-800 mb-4">About {college.shortName}</h2>
-                  <p className="text-gray-600 leading-relaxed mb-6">
-                    {college.name} is one of India's premier institutions of higher learning and research. 
-                    Established in {college.established}, it has been at the forefront of engineering education 
-                    and technological innovation for over six decades. The institute is renowned for its 
-                    rigorous academic programs, world-class faculty, and outstanding alumni who have made 
-                    significant contributions to various fields globally.
-                  </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-3">Key Highlights</h3>
-                      <ul className="space-y-2 text-gray-600">
-                        <li className="flex items-center">
-                          <Award className="h-4 w-4 text-blue-500 mr-2" />
-                          NIRF Ranking: #2 (Engineering)
-                        </li>
-                        <li className="flex items-center">
-                          <Trophy className="h-4 w-4 text-blue-500 mr-2" />
-                          Institute of National Importance
-                        </li>
-                        <li className="flex items-center">
-                          <GraduationCap className="h-4 w-4 text-blue-500 mr-2" />
-                          NAAC Grade: A++
-                        </li>
-                        <li className="flex items-center">
-                          <Globe className="h-4 w-4 text-blue-500 mr-2" />
-                          International Collaborations: 100+
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-3">Recognition</h3>
-                      <ul className="space-y-2 text-gray-600">
-                        <li>• QS World University Rankings: Top 200</li>
-                        <li>• Times Higher Education Rankings</li>
-                        <li>• Best Engineering Institute Award</li>
-                        <li>• Research Excellence Recognition</li>
-                      </ul>
-                    </div>
+                  <div dangerouslySetInnerHTML={{ __html: college.aboutHTML }} />
+                </div>
+
+                {/* Fees Structure */}
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Fees Structure</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(college.fee_structures).map(([graduationLevel, degreeTypes]) => (
+                      <div key={graduationLevel} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white hover:shadow-md transition-shadow">
+                        <h3 className="font-semibold text-gray-800 mb-2 text-sm">{graduationLevel}</h3>
+                        <div className="space-y-3">
+                          {Object.entries(degreeTypes as Record<string, any>).map(([degreeType, feeObj]) => (
+                            <div key={degreeType} className="border border-gray-100 rounded-md p-2 bg-white">
+                              <div className="font-semibold text-blue-700 mb-1 text-xs">{degreeType}</div>
+                              <div className="space-y-1">
+                                {Object.entries(feeObj).map(([feeKey, feeValue]) => {
+                                  if (!feeValue) return null;
+                                  return (
+                                    <div key={feeKey} className="flex justify-between text-sm">
+                                      <span className="capitalize text-gray-600">{feeKey.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                      <span className="font-medium text-gray-800">{String(feeValue)}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 {/* Latest News */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Latest News</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {college.news.map((newsItem, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                        <img src={newsItem.image} alt={newsItem.title} className="w-full h-32 object-cover" />
-                        <div className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium">
-                              {newsItem.category}
-                            </span>
-                            <span className="text-gray-500 text-xs">{newsItem.date}</span>
+                  <div className="relative">
+                    <div className="overflow-x-auto scrollbar-hide">
+                      <div className="flex gap-4 pb-4" style={{ scrollSnapType: 'x mandatory' }}>
+                        {college.news.map((newsItem, index) => (
+                          <div 
+                            key={index} 
+                            className="flex-shrink-0 w-72 border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                            style={{ scrollSnapAlign: 'start' }}
+                          >
+                            <img src={newsItem.image} alt={newsItem.title} className="w-full h-40 object-cover" />
+                            <div className="p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium">
+                                  {newsItem.category}
+                                </span>
+                                <span className="text-gray-500 text-xs">{newsItem.date}</span>
+                              </div>
+                              <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">{newsItem.title}</h3>
+                              <p className="text-gray-600 text-sm line-clamp-2">{newsItem.excerpt}</p>
+                            </div>
                           </div>
-                          <h3 className="font-semibold text-gray-800 mb-2">{newsItem.title}</h3>
-                          <p className="text-gray-600 text-sm">{newsItem.excerpt}</p>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
+                  <style jsx>{`
+                    .scrollbar-hide::-webkit-scrollbar {
+                      display: none;
+                    }
+                    .scrollbar-hide {
+                      -ms-overflow-style: none;
+                      scrollbar-width: none;
+                    }
+                  `}</style>
                 </div>
 
                 {/* Alumni Network */}
@@ -1289,6 +1001,54 @@ const CollegePage = () => {
                         <h3 className="font-semibold text-gray-800">{alumni.name}</h3>
                         <p className="text-sm text-gray-600">{alumni.position}</p>
                         <p className="text-sm text-blue-600">{alumni.company}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Scholarships & Financial Aid */}
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Scholarships & Financial Aid</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {college.scholarships.map((scholarship, index) => (
+                      <div key={index} className="border border-blue-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 text-sm mb-1">{scholarship.name}</h3>
+                            <p className="text-lg font-bold text-blue-600">{scholarship.amount}</p>
+                          </div>
+                          <Award className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                        </div>
+                        
+                        <p className="text-xs text-gray-600 mb-3 line-clamp-2">{scholarship.description}</p>
+                        
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-gray-600">{scholarship.eligibility}</p>
+                          </div>
+                          
+                          {scholarship.deadline && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                              <p className="text-xs text-gray-600">
+                                <span className="font-medium">Deadline:</span> {scholarship.deadline}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {scholarship.applyLink && (
+                          <Link
+                            href={scholarship.applyLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Apply Now
+                          </Link>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1317,208 +1077,201 @@ const CollegePage = () => {
                     ))}
                   </div>
                 </div>
-
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Scholarships & Financial Aid</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {college.scholarships.map((scholarship, index) => (
-                      <div key={index} className="border border-dashed border-blue-200 rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="font-semibold text-gray-800">{scholarship.name}</h3>
-                            <p className="text-sm text-blue-600">{scholarship.amount}</p>
-                          </div>
-                          <Award className="h-5 w-5 text-blue-500" />
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">{scholarship.description}</p>
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Eligibility: {scholarship.eligibility}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Funding & Grants</h2>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    <div className="rounded-lg bg-green-50 border border-green-100 p-5 text-center">
-                      <DollarSign className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-green-700">{college.funding.totalFunding}</div>
-                      <p className="text-sm text-gray-600">Total Funding Secured</p>
-                    </div>
-                    <div className="lg:col-span-2 rounded-lg border border-gray-200 p-5">
-                      <h3 className="font-semibold text-gray-800 mb-3">Funding Sources</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {college.funding.sources.map((source, index) => (
-                          <span key={index} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                            {source}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 mb-3">Recent Grants</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {college.funding.recentGrants.map((grant, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-blue-600">{grant.source}</span>
-                            <span className="text-xs text-gray-500">{grant.year}</span>
-                          </div>
-                          <p className="text-lg font-semibold text-gray-800">{grant.amount}</p>
-                          <p className="text-sm text-gray-600">{grant.purpose}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
 
             {activeTab === 'academics' && (
-              <div className="space-y-8">
-                {/* Departments */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Academic Departments</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                    {college.academics.departments.map((dept) => {
-                      const isActive = selectedDepartment === dept.name;
-                      return (
-                        <button
-                          key={dept.name}
-                          type="button"
-                          onClick={() => setSelectedDepartment(dept.name)}
-                          className={`text-left rounded-lg border p-4 transition-colors ${
-                            isActive
-                              ? 'border-blue-500 bg-blue-50 shadow-sm'
-                              : 'border-gray-200 hover:border-blue-300'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div>
-                              <h3 className="font-semibold text-gray-800 mb-1">{dept.name}</h3>
-                            </div>
-                            <div className={`rounded-full border p-1 ${isActive ? 'border-blue-400 bg-white text-blue-500' : 'border-gray-200 text-gray-400'}`}>
-                              <ChevronRight className={`h-4 w-4 transition-transform ${isActive ? 'rotate-90' : ''}`} />
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {dept.strengths.slice(0, 3).map((strength) => (
-                              <span key={strength} className="rounded-full bg-blue-100 text-blue-600 px-2 py-0.5 text-xs font-medium">
-                                {strength}
-                              </span>
-                            ))}
-                          </div>
-                        </button>
-                      );
-                    })}
+              <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+                <div className="max-w-7xl mx-auto">
+                  <div className="mb-8">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">Academic Programs</h1>
+                    <p className="text-gray-600">Explore our comprehensive range of courses and certifications</p>
                   </div>
 
-                  {selectedDepartmentData && (
-                    <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/60 p-6">
-                      <h3 className="text-xl font-semibold text-gray-800 mb-2">Courses Offered — {selectedDepartmentData.name}</h3>
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {selectedDepartmentData.strengths.map((strength) => (
-                          <span key={strength} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-blue-600 shadow-sm">
-                            {strength}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <GraduationCap className="h-5 w-5 text-blue-600" />
-                            <h4 className="font-semibold text-gray-800">Undergraduate</h4>
-                          </div>
-                          <ul className="space-y-2 text-sm text-gray-700">
-                            {selectedDepartmentData.undergraduateCourses.map((course) => (
-                              <li key={course} className="rounded-lg bg-white px-3 py-2 shadow-sm">{course}</li>
-                            ))}
-                          </ul>
+                  <div className="flex gap-6">
+                    {/* Left Sidebar - Filters */}
+                    <div className="w-64 flex-shrink-0">
+                      <div className="bg-white rounded-xl shadow-sm p-6 sticky top-6">
+                        <div className="flex items-center gap-2 mb-6">
+                          <Filter className="h-5 w-5 text-gray-700" />
+                          <h2 className="text-lg font-semibold text-gray-900">Filter Programs</h2>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {filterOptions.map((option) => {
+                            const Icon = option.icon;
+                            const isActive = selectedFilter === option.id;
+                            return (
+                              <button
+                                key={option.id}
+                                onClick={() => setSelectedFilter(option.id)}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                                  isActive
+                                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                }`}
+                              >
+                                <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-500'}`} />
+                                <span className="font-medium">{option.label}</span>
+                              </button>
+                            );
+                          })}
                         </div>
 
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <Award className="h-5 w-5 text-green-600" />
-                            <h4 className="font-semibold text-gray-800">Postgraduate</h4>
+                        {/* Faculty Stats */}
+                        <div className="mt-8 pt-6 border-t border-gray-200">
+                          <h3 className="text-sm font-semibold text-gray-900 mb-4">Faculty Overview</h3>
+                          <div className="space-y-3">
+                            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3">
+                              <div className="text-2xl font-bold text-blue-600">{college.academics.facultyCount}+</div>
+                              <div className="text-xs text-gray-600 mt-1">Faculty Members</div>
+                            </div>
+                            <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3">
+                              <div className="text-2xl font-bold text-green-600">{college.academics.studentFacultyRatio}</div>
+                              <div className="text-xs text-gray-600 mt-1">Student-Faculty Ratio</div>
+                            </div>
                           </div>
-                          <ul className="space-y-2 text-sm text-gray-700">
-                            {selectedDepartmentData.postgraduateCourses.map((course) => (
-                              <li key={course} className="rounded-lg bg-white px-3 py-2 shadow-sm">{course}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <Trophy className="h-5 w-5 text-purple-600" />
-                            <h4 className="font-semibold text-gray-800">Doctoral</h4>
-                          </div>
-                          <ul className="space-y-2 text-sm text-gray-700">
-                            {selectedDepartmentData.phdCourses.map((course) => (
-                              <li key={course} className="rounded-lg bg-white px-3 py-2 shadow-sm">{course}</li>
-                            ))}
-                          </ul>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Courses */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Courses Offered</h2>
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Undergraduate Programs</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {college.academics.courses.undergraduate.map((course, index) => (
-                          <div key={index} className="flex items-center p-3 border border-gray-200 rounded-lg">
-                            <GraduationCap className="h-5 w-5 text-blue-600 mr-3" />
-                            <span className="text-gray-700">{course}</span>
+                    {/* Main Content Area */}
+                    <div className="flex-1">
+                      {/* Course Cards */}
+                      {filteredCourses.length > 0 && (
+                        <div className="space-y-6 mb-8">
+                          <h2 className="text-2xl font-bold text-gray-900">
+                            {selectedFilter === 'all' ? 'Degree Programs' : `${selectedFilter} Programs`}
+                          </h2>
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {filteredCourses.map((course, index) => {
+                              const color = getDegreeColor(course.degree);
+                              return (
+                                <div
+                                  key={index}
+                                  className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden"
+                                >
+                                  <div className={`h-2 bg-gradient-to-r from-${color}-400 to-${color}-600`}></div>
+                                  
+                                  <div className="p-6">
+                                    <div className="flex items-start justify-between mb-4">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-${color}-100 text-${color}-700`}>
+                                            {course.degree}
+                                          </span>
+                                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                            {course.duration}
+                                          </span>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-gray-900 mb-1">{course.name}</h3>
+                                        <p className="text-sm text-gray-600">{course.graduation_level}</p>
+                                      </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-100">
+                                      <div className="flex items-center gap-2">
+                                        <div className={`p-2 rounded-lg bg-${color}-50`}>
+                                          <Users className={`h-4 w-4 text-${color}-600`} />
+                                        </div>
+                                        <div>
+                                          <div className="text-xs text-gray-500">Batch Size</div>
+                                          <div className="text-sm font-semibold text-gray-900">{course.classroom_size || 'N/A'}</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className={`p-2 rounded-lg bg-${color}-50`}>
+                                          <BookOpen className={`h-4 w-4 text-${color}-600`} />
+                                        </div>
+                                        <div>
+                                          <div className="text-xs text-gray-500">Annual Fees</div>
+                                          <div className="text-sm font-semibold text-gray-900">{course.fees}</div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* HOD Card */}
+                                    {course.hod && (
+                                      <div className={`bg-gradient-to-br from-${color}-50 to-white rounded-lg p-4 border border-${color}-100`}>
+                                        <div className="flex items-start gap-3">
+                                          <img
+                                            src={course.hod.image}
+                                            alt={course.hod.name}
+                                            className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md"
+                                          />
+                                          <div className="flex-1 min-w-0">
+                                            <div className="text-xs font-semibold text-gray-500 mb-1">Head of Department</div>
+                                            <h4 className="font-bold text-gray-900 mb-2">{course.hod.name}</h4>
+                                            <div className="space-y-1">
+                                              <a
+                                                href={`tel:${course.hod.mobile}`}
+                                                className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600 transition-colors"
+                                              >
+                                                <Phone className="h-3 w-3" />
+                                                <span>{course.hod.mobile}</span>
+                                              </a>
+                                              <a
+                                                href={`mailto:${course.hod.email}`}
+                                                className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600 transition-colors truncate"
+                                              >
+                                                <Mail className="h-3 w-3 flex-shrink-0" />
+                                                <span className="truncate">{course.hod.email}</span>
+                                              </a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
+                      )}
 
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Postgraduate Programs</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {college.academics.courses.postgraduate.map((course, index) => (
-                          <div key={index} className="flex items-center p-3 border border-gray-200 rounded-lg">
-                            <Award className="h-5 w-5 text-green-600 mr-3" />
-                            <span className="text-gray-700">{course}</span>
+                      {/* Certifications */}
+                      {showCertifications && college.academics.certifications.length > 0 && (
+                        <div className="space-y-6">
+                          <h2 className="text-2xl font-bold text-gray-900">Professional Certifications</h2>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {college.academics.certifications.map((cert, index) => (
+                              <div
+                                key={index}
+                                className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-100 p-6"
+                              >
+                                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 mb-4">
+                                  <CheckCircle2 className="h-6 w-6 text-white" />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">{cert.name}</h3>
+                                <div className="space-y-2 mb-4">
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Duration:</span>
+                                    <span className="font-semibold text-gray-900">{cert.duration}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Fees:</span>
+                                    <span className="font-semibold text-gray-900">{cert.fees}</span>
+                                  </div>
+                                </div>
+                                <div className="pt-4 border-t border-gray-100">
+                                  <div className="text-xs text-gray-500 mb-1">Eligibility</div>
+                                  <div className="text-sm font-medium text-gray-700">{cert.eligibility}</div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
+                      )}
 
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Doctoral Programs</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {college.academics.courses.phd.map((course, index) => (
-                          <div key={index} className="flex items-center p-3 border border-gray-200 rounded-lg">
-                            <Trophy className="h-5 w-5 text-purple-600 mr-3" />
-                            <span className="text-gray-700">{course}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Faculty */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Faculty Information</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-blue-600 mb-2">{college.academics.facultyCount}+</div>
-                      <div className="text-gray-600">Total Faculty Members</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-green-600 mb-2">{college.academics.studentFacultyRatio}</div>
-                      <div className="text-gray-600">Student-Faculty Ratio</div>
+                      {/* Empty State */}
+                      {filteredCourses.length === 0 && !showCertifications && (
+                        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                          <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">No programs found</h3>
+                          <p className="text-gray-600">Try selecting a different filter</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1535,9 +1288,9 @@ const CollegePage = () => {
                       <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 transition-colors">
                         <div className="flex items-center gap-2 mb-3">
                           <ListChecks className="h-5 w-5 text-blue-500" />
-                          <span className="text-sm font-semibold text-blue-600 uppercase tracking-wide">Step {index + 1}</span>
+                          <h4 className="font-semibold text-gray-800">{step.title}</h4>
                         </div>
-                        <p className="text-gray-700 text-sm leading-relaxed">{step}</p>
+                        <p className="text-gray-700 text-sm leading-relaxed">{step.description}</p>
                       </div>
                     ))}
                   </div>
@@ -1583,11 +1336,7 @@ const CollegePage = () => {
                             <GraduationCap className="h-5 w-5 text-blue-500" />
                             <h3 className="font-semibold text-gray-800">{item.program}</h3>
                           </div>
-                          <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
-                            {item.criteria.map((criterion, criterionIndex) => (
-                              <li key={criterionIndex}>{criterion}</li>
-                            ))}
-                          </ul>
+                          <p className="text-sm text-gray-600">{item.criteria}</p>
                         </div>
                       ))}
                     </div>
@@ -1603,9 +1352,9 @@ const CollegePage = () => {
                               <Award className="h-5 w-5 text-green-500" />
                               <h3 className="font-semibold text-gray-800">{exam.name}</h3>
                             </div>
-                            <span className="bg-green-50 text-green-600 px-2 py-1 rounded-full text-xs font-medium">{exam.weightage}</span>
+                            <span className="bg-green-50 text-green-600 px-2 py-1 rounded-full text-xs font-medium">{exam.minScore}</span>
                           </div>
-                          <p className="text-gray-600 text-sm">{exam.score}</p>
+                          <p className="text-gray-600 text-sm">{exam.description}</p>
                         </div>
                       ))}
                     </div>
@@ -1875,7 +1624,10 @@ const CollegePage = () => {
                           <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-50 text-blue-600 font-semibold">
                             {index + 1}
                           </div>
-                          <p className="text-gray-700 text-sm leading-relaxed">{step}</p>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">{step.step}</h4>
+                            <p className="text-gray-600 text-sm">{step.description}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1938,7 +1690,7 @@ const CollegePage = () => {
                           </div>
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">{slot.time}</p>
-                            <p className="text-sm text-gray-700 leading-relaxed">{slot.activity}</p>
+                                                       <p className="text-sm text-gray-700 leading-relaxed">{slot.activity}</p>
                           </div>
                         </div>
                       );
@@ -2031,17 +1783,12 @@ const CollegePage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-3">Accommodation Overview</h3>
-                      <ul className="space-y-2 text-gray-600">
-                        <li>• Capacity: {college.infrastructure.hostel.capacity.toLocaleString()} students</li>
-                        <li>• Room Types: {college.infrastructure.hostel.rooms}</li>
-                        <li>• Separate hostels for boys and girls</li>
-                        <li>• 24/7 Security</li>
-                      </ul>
+                      <p className="text-gray-600">{college.campusExperience.residential.description}</p>
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-3">In-Hostel Essentials</h3>
                       <div className="flex flex-wrap gap-2">
-                        {college.infrastructure.hostel.facilities.map((facility, index) => (
+                        {college.campusExperience.residential.facilities.map((facility, index) => (
                           <span key={index} className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
                             {facility}
                           </span>
@@ -2052,7 +1799,7 @@ const CollegePage = () => {
                   <div className="flex items-center gap-3 rounded-lg bg-blue-50 p-4">
                     <Star className="h-5 w-5 text-yellow-500 fill-current" />
                     <div>
-                      <p className="font-semibold text-gray-800">Hostel Rating: {college.ratings.hostelLife}/5</p>
+                      <p className="font-semibold text-gray-800">Hostel Rating: {college.campusExperience.residential.rating}/5</p>
                       <p className="text-sm text-gray-600">Aggregated from verified student reviews</p>
                     </div>
                   </div>
@@ -2158,7 +1905,7 @@ const CollegePage = () => {
                                 </div>
                               </div>
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-800">{event.name}</h3>
+                            <h3 className="text-xl font-semibold text-gray-800 mb-2">{event.name}</h3>
                             <p className="text-sm text-gray-600 leading-relaxed">{event.description}</p>
                           </div>
 
@@ -2445,9 +2192,9 @@ const CollegePage = () => {
                       <div
                         key={index}
                         className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform"
-                        onClick={() => setSelectedImage(image)}
+                        onClick={() => setSelectedImage(image.url)}
                       >
-                        <img src={image} alt={`${selectedImageCategory} ${index + 1}`} className="w-full h-full object-cover" />
+                        <img src={image.url} alt={image.description} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors flex items-center justify-center">
                           <ImageIcon className="h-8 w-8 text-white opacity-0 hover:opacity-100 transition-opacity" />
                         </div>
