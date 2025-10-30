@@ -15,7 +15,7 @@ import {
   ListChecks, HelpCircle, CheckCircle2, LineChart,
   Globe2, UserCheck, Rocket, Handshake, Sun, Moon,
   Utensils, Dumbbell, HeartPulse, LifeBuoy, Leaf,
-  Bus, Sparkles, Medal, Filter
+  Bus, Sparkles, Medal, Filter, CheckCircle
 } from 'lucide-react';
 
 const socialIconConfig = {
@@ -50,7 +50,20 @@ interface CollegeData {
     phone: string[];
     email: string[];
     website: string;
-    admissionHelpline: string;
+    helpline?: {
+      admission?: {
+        phone?: string;
+        email?: string;
+      };
+      scholarships?: {
+        phone?: string;
+        email?: string;
+      };
+      general?: {
+        phone?: string;
+        email?: string;
+      };
+    };
   };
   ratings: {
     overall: number;
@@ -136,27 +149,27 @@ interface CollegeData {
     }>;
   };
   admissions: {
-    applicationProcess: string;
-    steps: Array<{
-      title: string;
-      description: string;
+    overview: string;
+    methods: {
+      type: "Exam-Based" | "Non-Exam-Based";
+      methods: Array<{
+        name: string;
+        applicationPrograms: string[];
+        eligibility: string[];
+        requiredDocuments: string[];
+        steps: Array<{
+          step: string;
+          description?: string;
+          deadline?: string;
+          link?: string;
+        }>;
+      }>;
+    }[];
+    generalGuidelines: string;
+    importantLinks: Array<{
+      label: string;
+      url: string;
     }>;
-    importantDates: Array<{
-      event: string;
-      startDate: string;
-      endDate: string;
-      status: 'Upcoming' | 'Ongoing' | 'Closed';
-    }>;
-    eligibility: Array<{
-      program: string;
-      criteria: string;
-    }>;
-    requiredExams: Array<{
-      name: string;
-      minScore: string;
-      description: string;
-    }>;
-    documents: string[];
     faqs: Array<{
       question: string;
       answer: string;
@@ -375,10 +388,11 @@ const CollegePage = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string>('');
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
+  const [selectedMethodType, setSelectedMethodType] = useState(0);
+  const [expandedMethod, setExpandedMethod] = useState(0);
 
 
   useEffect(() => {
@@ -452,33 +466,9 @@ const CollegePage = () => {
             successStories: mainData.college_placements.successStories,
             branchwise: mainData.college_branch_placements.branches
           },
-          
-          admissions: {
-            applicationProcess: mainData.college_admissions.overview,
-            steps: [
-              { title: 'Step 1: Online Application', description: 'Fill the application form and upload documents.' },
-              { title: 'Step 2: Entrance Exam', description: 'Appear for JEE Main/GATE/CAT based on program.' },
-              { title: 'Step 3: Counseling', description: 'Attend counseling sessions for seat allotment.' },
-              { title: 'Step 4: Document Verification', description: 'Submit original documents for verification.' },
-              { title: 'Step 5: Fee Payment', description: 'Pay the admission fee to confirm your seat.' },
-              { title: 'Step 6: Registration', description: 'Complete registration and join orientation.' }
-            ],
-            importantDates: mainData.college_admissions.programs['B.Tech']?.importantDates || [],
-            eligibility: (mainData.college_admissions.programs['B.Tech']?.eligibility || []).map((criteria: string) => ({
-              program: 'B.Tech',
-              criteria: criteria
-            })),
-            requiredExams: [
-              { name: 'JEE Main', minScore: '75 percentile', description: 'For B.Tech admissions' },
-              { name: 'GATE', minScore: 'Valid score', description: 'For M.Tech admissions' }
-            ],
-            documents: mainData.college_admissions.programs['B.Tech']?.requiredDocuments || [],
-            faqs: [
-              { question: 'What is the admission process?', answer: mainData.college_admissions.overview },
-              { question: 'What documents are required?', answer: 'Please check the required documents section for your program.' }
-            ]
-          },
-          
+
+          admissions: mainData.college_admissions,
+
           academics: {
             courses: mainData.college_academics.courses,
             certifications: mainData.college_academics.certifications,
@@ -604,7 +594,7 @@ const CollegePage = () => {
             type: p.type
           }))
         };
-
+        console.log('Fetched College Data:', collegeData.admissions);
         setCollege(collegeData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch college data');
@@ -623,11 +613,9 @@ const CollegePage = () => {
     }
   }, [college]);
 
-  useEffect(() => {
-    if (college && college.academics.courses.length > 0) {
-      setSelectedDepartment((prev) => prev || college.academics.courses[0].name);
-    }
-  }, [college]);
+  const toggleMethod = (index) => {
+    setExpandedMethod(expandedMethod === index ? -1 : index);
+  };
 
   // Add filter options for courses and certifications
   const filterOptions = [
@@ -695,21 +683,6 @@ const CollegePage = () => {
     return null;
   }
 
-  const getStatusBadgeClasses = (
-    status: CollegeData['admissions']['importantDates'][number]['status']
-  ) => {
-    switch (status) {
-      case 'Upcoming':
-        return 'bg-blue-100 text-blue-600';
-      case 'Ongoing':
-        return 'bg-green-100 text-green-600';
-      case 'Closed':
-        return 'bg-gray-200 text-gray-600';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  };
-
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Eye },
     { id: 'academics', label: 'Academics', icon: BookOpen },
@@ -766,10 +739,6 @@ const CollegePage = () => {
   );
 
   const timelineIcons = [Sun, BookOpen, Utensils, Activity, Moon];
-
-  // const selectedDepartmentData = college.academics.departments.find(
-  //   (dept) => dept.name === selectedDepartment
-  // );
 
   const renderSocialLinks = (
     social: Partial<Record<keyof typeof socialIconConfig, string | undefined>>
@@ -948,6 +917,55 @@ const CollegePage = () => {
                   </div>
                 </div>
 
+                {/* Scholarships & Financial Aid */}
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Scholarships & Financial Aid</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {college.scholarships.map((scholarship, index) => (
+                      <div key={index} className="border border-blue-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 text-sm mb-1">{scholarship.name}</h3>
+                            <p className="text-lg font-bold text-blue-600">{scholarship.amount}</p>
+                          </div>
+                          <Award className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                        </div>
+                        
+                        <p className="text-xs text-gray-600 mb-3 line-clamp-2">{scholarship.description}</p>
+                        
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-gray-600">{scholarship.eligibility}</p>
+                          </div>
+                          
+                          {scholarship.deadline && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                              <p className="text-xs text-gray-600">
+                                <span className="font-medium">Deadline:</span> {scholarship.deadline}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {scholarship.applyLink && (
+                          <Link
+                            href={scholarship.applyLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Apply Now
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+
                 {/* Latest News */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Latest News</h2>
@@ -1001,54 +1019,6 @@ const CollegePage = () => {
                         <h3 className="font-semibold text-gray-800">{alumni.name}</h3>
                         <p className="text-sm text-gray-600">{alumni.position}</p>
                         <p className="text-sm text-blue-600">{alumni.company}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Scholarships & Financial Aid */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Scholarships & Financial Aid</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {college.scholarships.map((scholarship, index) => (
-                      <div key={index} className="border border-blue-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-800 text-sm mb-1">{scholarship.name}</h3>
-                            <p className="text-lg font-bold text-blue-600">{scholarship.amount}</p>
-                          </div>
-                          <Award className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                        </div>
-                        
-                        <p className="text-xs text-gray-600 mb-3 line-clamp-2">{scholarship.description}</p>
-                        
-                        <div className="space-y-2 mb-3">
-                          <div className="flex items-start gap-2">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-xs text-gray-600">{scholarship.eligibility}</p>
-                          </div>
-                          
-                          {scholarship.deadline && (
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
-                              <p className="text-xs text-gray-600">
-                                <span className="font-medium">Deadline:</span> {scholarship.deadline}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {scholarship.applyLink && (
-                          <Link
-                            href={scholarship.applyLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            Apply Now
-                          </Link>
-                        )}
                       </div>
                     ))}
                   </div>
@@ -1279,115 +1249,193 @@ const CollegePage = () => {
             )}
 
             {activeTab === 'admissions' && (
-              <div className="space-y-8">
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Admission Process</h2>
-                  <p className="text-gray-600 leading-relaxed mb-6">{college.admissions.applicationProcess}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {college.admissions.steps.map((step, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 transition-colors">
-                        <div className="flex items-center gap-2 mb-3">
-                          <ListChecks className="h-5 w-5 text-blue-500" />
-                          <h4 className="font-semibold text-gray-800">{step.title}</h4>
-                        </div>
-                        <p className="text-gray-700 text-sm leading-relaxed">{step.description}</p>
+              <div className="space-y-8 max-w-7xl mx-auto p-6">
+                {/* Overview Section */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm p-8 border border-blue-100">
+                  <div className="flex items-center gap-3 mb-4">
+                    <GraduationCap className="h-8 w-8 text-blue-600" />
+                    <h1 className="text-3xl font-bold text-gray-800">Admissions Overview</h1>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed text-lg">{college.admissions.overview}</p>
+                </div>
+
+                {/* Method Type Tabs */}
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <div className="flex border-b border-gray-200">
+                    {college.admissions.methods.map((methodGroup, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedMethodType(index)}
+                        className={`flex-1 px-6 py-4 font-semibold transition-all ${
+                          selectedMethodType === index
+                            ? 'bg-blue-500 text-white border-b-2 border-blue-600'
+                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {methodGroup.type}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Methods Content */}
+                  <div className="p-6">
+                    {college.admissions.methods[selectedMethodType].methods.map((method, methodIndex) => (
+                      <div key={methodIndex} className="mb-6 last:mb-0">
+                        <button
+                          onClick={() => toggleMethod(methodIndex)}
+                          className="w-full bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors border-2 border-gray-200 hover:border-blue-300"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <BookOpen className="h-6 w-6 text-blue-600" />
+                              <h3 className="text-xl font-bold text-gray-800 text-left">{method.name}</h3>
+                            </div>
+                            <span className="text-blue-600 text-2xl">{expandedMethod === methodIndex ? '−' : '+'}</span>
+                          </div>
+                        </button>
+
+                        {expandedMethod === methodIndex && (
+                          <div className="mt-4 space-y-6 pl-4">
+                            {/* Application Programs */}
+                            <div className="bg-white border border-gray-200 rounded-lg p-5">
+                              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <GraduationCap className="h-5 w-5 text-green-600" />
+                                Applicable Programs
+                              </h4>
+                              <div className="flex flex-wrap gap-2">
+                                {method.applicationPrograms.map((program, idx) => (
+                                  <span key={idx} className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                                    {program}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Eligibility */}
+                            <div className="bg-white border border-gray-200 rounded-lg p-5">
+                              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <CheckCircle className="h-5 w-5 text-blue-600" />
+                                Eligibility Requirements
+                              </h4>
+                              <ul className="space-y-2">
+                                {method.eligibility.map((item, idx) => (
+                                  <li key={idx} className="flex items-start gap-2 text-gray-700">
+                                    <span className="text-blue-500 mt-1">•</span>
+                                    <span>{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* Required Documents */}
+                            <div className="bg-white border border-gray-200 rounded-lg p-5">
+                              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <FileCheck className="h-5 w-5 text-purple-600" />
+                                Required Documents
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {method.requiredDocuments.map((doc, idx) => (
+                                  <div key={idx} className="flex items-center gap-2 text-gray-700 bg-gray-50 px-3 py-2 rounded">
+                                    <FileCheck className="h-4 w-4 text-purple-500" />
+                                    <span className="text-sm">{doc}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Application Steps */}
+                            <div className="bg-white border border-gray-200 rounded-lg p-5">
+                              <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <ListChecks className="h-5 w-5 text-orange-600" />
+                                Application Steps
+                              </h4>
+                              <div className="space-y-3">
+                                {method.steps.map((stepItem, idx) => (
+                                  <div key={idx} className="flex gap-4 border-l-4 border-orange-300 pl-4 py-2">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                                      {idx + 1}
+                                    </div>
+                                    <div className="flex-1">
+                                      <h5 className="font-semibold text-gray-800">{stepItem.step}</h5>
+                                      {stepItem.description && (
+                                        <p className="text-gray-600 text-sm mt-1">{stepItem.description}</p>
+                                      )}
+                                      <div className="flex flex-wrap gap-3 mt-2">
+                                        {stepItem.deadline && (
+                                          <span className="inline-flex items-center gap-1 text-xs bg-red-50 text-red-700 px-2 py-1 rounded">
+                                            <Calendar className="h-3 w-3" />
+                                            Deadline: {stepItem.deadline}
+                                          </span>
+                                        )}
+                                        {stepItem.link && (
+                                          <a
+                                            href={stepItem.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100"
+                                          >
+                                            <ExternalLink className="h-3 w-3" />
+                                            Visit Link
+                                          </a>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Important Dates</h2>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 text-sm">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left font-semibold text-gray-600">Event</th>
-                          <th className="px-4 py-3 text-left font-semibold text-gray-600">Start Date</th>
-                          <th className="px-4 py-3 text-left font-semibold text-gray-600">End Date</th>
-                          <th className="px-4 py-3 text-left font-semibold text-gray-600">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {college.admissions.importantDates.map((dateItem, index) => (
-                          <tr key={index}>
-                            <td className="px-4 py-3 font-medium text-gray-800">{dateItem.event}</td>
-                            <td className="px-4 py-3 text-gray-600">{dateItem.startDate}</td>
-                            <td className="px-4 py-3 text-gray-600">{dateItem.endDate}</td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClasses(dateItem.status)}`}>
-                                {dateItem.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                {/* General Guidelines */}
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <ListChecks className="h-6 w-6 text-blue-600" />
+                    General Guidelines
+                  </h2>
+                  <p className="text-gray-700 leading-relaxed">{college.admissions.generalGuidelines}</p>
+                </div>
+
+                {/* Important Links */}
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <ExternalLink className="h-6 w-6 text-blue-600" />
+                    Important Links
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {college.admissions.importantLinks.map((link, index) => (
+                      <a
+                        key={index}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-3 bg-blue-50 hover:bg-blue-100 p-4 rounded-lg transition-colors border border-blue-200"
+                      >
+                        <span className="font-medium text-blue-800">{link.label}</span>
+                        <ExternalLink className="h-4 w-4 text-blue-600" />
+                      </a>
+                    ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Eligibility Criteria</h2>
-                    <div className="space-y-4">
-                      {college.admissions.eligibility.map((item, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <GraduationCap className="h-5 w-5 text-blue-500" />
-                            <h3 className="font-semibold text-gray-800">{item.program}</h3>
-                          </div>
-                          <p className="text-sm text-gray-600">{item.criteria}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Required Exams & Documents</h2>
-                    <div className="space-y-4">
-                      {college.admissions.requiredExams.map((exam, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Award className="h-5 w-5 text-green-500" />
-                              <h3 className="font-semibold text-gray-800">{exam.name}</h3>
-                            </div>
-                            <span className="bg-green-50 text-green-600 px-2 py-1 rounded-full text-xs font-medium">{exam.minScore}</span>
-                          </div>
-                          <p className="text-gray-600 text-sm">{exam.description}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-6">
-                      <h3 className="text-sm font-semibold text-gray-800 mb-3">Documents Checklist</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {college.admissions.documents.map((document, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs"
-                          >
-                            <FileCheck className="h-3 w-3 text-blue-500" />
-                            {document}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Admissions FAQs</h2>
+                {/* FAQs */}
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                    <HelpCircle className="h-6 w-6 text-blue-600" />
+                    Frequently Asked Questions
+                  </h2>
                   <div className="space-y-4">
                     {college.admissions.faqs.map((faq, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-start gap-3">
-                          <HelpCircle className="h-5 w-5 text-blue-500 mt-1" />
-                          <div>
-                            <h3 className="font-semibold text-gray-800">{faq.question}</h3>
-                            <p className="text-gray-600 text-sm mt-1">{faq.answer}</p>
-                          </div>
-                        </div>
+                      <div key={index} className="border border-gray-200 rounded-lg p-5 hover:border-blue-300 transition-colors">
+                        <h3 className="font-semibold text-gray-800 mb-2 flex items-start gap-2">
+                          <span className="text-blue-500 mt-1">Q:</span>
+                          <span>{faq.question}</span>
+                        </h3>
+                        <p className="text-gray-600 pl-6">{faq.answer}</p>
                       </div>
                     ))}
                   </div>
@@ -1637,8 +1685,8 @@ const CollegePage = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Success Stories</h2>
                     <div className="space-y-4">
                       {college.placement.successStories.map((story, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-3">
+                        <div key={index} className="border border-gray-200 rounded-xl p-6 hover:border-blue-200 transition-colors">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                             <div>
                               <h3 className="font-semibold text-gray-800">{story.name}</h3>
                               <p className="text-sm text-gray-600">{story.role} @ {story.company}</p>
@@ -2284,10 +2332,65 @@ const CollegePage = () => {
                 </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="text-sm font-medium text-gray-800 mb-2">Admission Helpline</p>
-                <p className="text-blue-600 font-semibold">{college.contact.admissionHelpline}</p>
-              </div>
+                {/* Helplines */}
+                {college.contact.helpline && (
+                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
+                  {/* Admission Helpline */}
+                  {college.contact.helpline.admission && (
+                    <div>
+                    <p className="text-sm font-medium text-gray-800 mb-1">Admission Helpline</p>
+                    {college.contact.helpline.admission.phone && (
+                      <p className="text-blue-600 font-semibold">
+                      <Phone className="inline h-4 w-4 mr-1" />
+                      {college.contact.helpline.admission.phone}
+                      </p>
+                    )}
+                    {college.contact.helpline.admission.email && (
+                      <p className="text-blue-600 font-semibold">
+                      <Mail className="inline h-4 w-4 mr-1" />
+                      {college.contact.helpline.admission.email}
+                      </p>
+                    )}
+                    </div>
+                  )}
+                  {/* Scholarships Helpline */}
+                  {college.contact.helpline.scholarships && (
+                    <div>
+                    <p className="text-sm font-medium text-gray-800 mb-1">Scholarship Helpline</p>
+                    {college.contact.helpline.scholarships.phone && (
+                      <p className="text-green-600 font-semibold">
+                      <Phone className="inline h-4 w-4 mr-1" />
+                      {college.contact.helpline.scholarships.phone}
+                      </p>
+                    )}
+                    {college.contact.helpline.scholarships.email && (
+                      <p className="text-green-600 font-semibold">
+                      <Mail className="inline h-4 w-4 mr-1" />
+                      {college.contact.helpline.scholarships.email}
+                      </p>
+                    )}
+                    </div>
+                  )}
+                  {/* General Helpline */}
+                  {college.contact.helpline.general && (
+                    <div>
+                    <p className="text-sm font-medium text-gray-800 mb-1">General Helpline</p>
+                    {college.contact.helpline.general.phone && (
+                      <p className="text-gray-600 font-semibold">
+                      <Phone className="inline h-4 w-4 mr-1" />
+                      {college.contact.helpline.general.phone}
+                      </p>
+                    )}
+                    {college.contact.helpline.general.email && (
+                      <p className="text-gray-600 font-semibold">
+                      <Mail className="inline h-4 w-4 mr-1" />
+                      {college.contact.helpline.general.email}
+                      </p>
+                    )}
+                    </div>
+                  )}
+                  </div>
+                )}
             </div>
 
             {/* Social Media */}
