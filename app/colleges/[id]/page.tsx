@@ -208,25 +208,17 @@ interface CollegeData {
       libraries: number;
     };
     facilities: string[];
-    hostels: Array<{
-      name: string;
-      capacity: number;
-      rooms: string;
-      facilities: string[];
-      gallery: string[];
-      description: string;
-      reviews: Array<{
-        student: string;
-        batch: string;
-        comment: string;
-      }>;
-    }>;
     innovationCenters: Array<{
       name: string;
       focus: string;
       description: string;
       link?: string;
-      gallery: string[];
+      gallery: Array<{
+        url: string;
+        description: string;
+        year: number;
+        photographerCredit: string;
+      }>;
     }>;
     digitalInfrastructure: string[];
     sustainabilityInitiatives: Array<{
@@ -242,10 +234,6 @@ interface CollegeData {
     lifestyleHighlights: Array<{
       title: string;
       description: string;
-    }>;
-    dailyTimeline: Array<{
-      time: string;
-      activity: string;
     }>;
     supportServices: Array<{
       name: string;
@@ -265,11 +253,31 @@ interface CollegeData {
       name: string;
       description: string;
     }>;
-    residential: {
-      description: string;
+    residential: Array<{
+      name: string;
+      hostel_type: string;
+      capacity: number;
+      rooms: string;
       facilities: string[];
-      rating: number;
-    };
+      gallery: Array<{
+        url: string;
+        description: string;
+        year: number;
+        photographerCredit: string;
+      }>;
+      description: string;
+      reviews: Array<{
+        student: string;
+        batch: string;
+        comment: string;
+        ratings: {
+          cleanliness: number;
+          foodQuality: number;
+          infrastructure: number;
+          overall: number;
+        };
+      }>;
+    }>;
   };
   clubs: Array<{
     name: string;
@@ -455,14 +463,7 @@ const CollegePage = () => {
             salaryTrends: mainData.college_placements.salaryTrends,
             sectorDistribution: mainData.college_placements.sectorDistribution,
             internshipStats: mainData.college_placements.internshipStats,
-            placementProcess: [
-              { step: 'Pre-Placement Talks', description: 'Companies present their profiles' },
-              { step: 'Resume Shortlisting', description: 'Based on CGPA and skills' },
-              { step: 'Written Test', description: 'Aptitude and technical assessment' },
-              { step: 'Group Discussion', description: 'Communication and teamwork' },
-              { step: 'Interviews', description: 'Technical and HR rounds' },
-              { step: 'Offer Letter', description: 'Final selection and onboarding' }
-            ],
+            placementProcess: mainData.college_placements.placementProcess,
             successStories: mainData.college_placements.successStories,
             branchwise: mainData.college_branch_placements.branches
           },
@@ -481,7 +482,6 @@ const CollegePage = () => {
             keyHighlights: mainData.college_infrastructure.keyHighlights,
             campus: mainData.college_infrastructure.campus,
             facilities: mainData.college_infrastructure.facilities,
-            hostels: mainData.college_infrastructure.hostels,
             innovationCenters: mainData.college_infrastructure.innovationCenters,
             digitalInfrastructure: mainData.college_infrastructure.digitalInfrastructure,
             sustainabilityInitiatives: mainData.college_infrastructure.sustainabilityInitiatives,
@@ -490,23 +490,150 @@ const CollegePage = () => {
           
           campusExperience: {
             lifestyleHighlights: mainData.college_campus_experience.lifestyleHighlights,
-            dailyTimeline: [
-              { time: '7:00 AM', activity: 'Morning routine & breakfast' },
-              { time: '9:00 AM', activity: 'Classes begin' },
-              { time: '1:00 PM', activity: 'Lunch break' },
-              { time: '2:00 PM', activity: 'Afternoon sessions & labs' },
-              { time: '5:00 PM', activity: 'Sports, clubs, or library' },
-              { time: '8:00 PM', activity: 'Dinner and evening activities' }
-            ],
             supportServices: mainData.college_campus_experience.supportServices,
             diningOptions: mainData.college_campus_experience.diningOptions,
             sportsAndFitness: mainData.college_campus_experience.sportsAndFitness,
             wellnessPrograms: mainData.college_campus_experience.wellnessPrograms,
-            residential: {
-              description: 'Modern hostel facilities with all amenities',
-              facilities: ['Wi-Fi', 'Laundry', 'Common rooms', 'Mess'],
-              rating: 4.0
-            }
+            residential: [
+              {
+                name: "Sunrise Hostel",
+                hostel_type: "boys",
+                capacity: 200,
+                rooms: "Single, Double",
+                facilities: ["Wi-Fi", "Laundry", "Common Room", "Mess"],
+                gallery: [
+                  {
+                    url: "https://example.com/sunrise-hostel-1.jpg",
+                    description: "Front view of Sunrise Hostel",
+                    year: 2023,
+                    photographerCredit: "John Doe",
+                  },
+                  {
+                    url: "https://example.com/sunrise-hostel-2.jpg",
+                    description: "Common room in Sunrise Hostel",
+                    year: 2023,
+                    photographerCredit: "Jane Smith",
+                  },
+                ],
+                description: "A modern boys' hostel with all essential amenities.",
+                reviews: [
+                  {
+                    student: "Rahul Sharma",
+                    batch: "2024",
+                    comment: "The hostel is clean and well-maintained. Food quality is good.",
+                    ratings: {
+                      cleanliness: 4,
+                      foodQuality: 4,
+                      infrastructure: 5,
+                      overall: 4,
+                    },
+                  },
+                  {
+                    student: "Amit Verma",
+                    batch: "2023",
+                    comment: "Great facilities but the Wi-Fi speed could be improved.",
+                    ratings: {
+                      cleanliness: 5,
+                      foodQuality: 3,
+                      infrastructure: 4,
+                      overall: 4,
+                    },
+                  },
+                ],
+              },
+              {
+                name: "Moonlight Hostel",
+                hostel_type: "girls",
+                capacity: 150,
+                rooms: "Single, Triple",
+                facilities: ["Wi-Fi", "24/7 Security", "Gym", "Mess"],
+                gallery: [
+                  {
+                    url: "https://example.com/moonlight-hostel-1.jpg",
+                    description: "Entrance of Moonlight Hostel",
+                    year: 2023,
+                    photographerCredit: "Alice Johnson",
+                  },
+                  {
+                    url: "https://example.com/moonlight-hostel-2.jpg",
+                    description: "Dining area in Moonlight Hostel",
+                    year: 2023,
+                    photographerCredit: "Bob Brown",
+                  },
+                ],
+                description: "A safe and secure hostel for girls with modern facilities.",
+                reviews: [
+                  {
+                    student: "Priya Singh",
+                    batch: "2025",
+                    comment: "The hostel is very secure and the gym is well-equipped.",
+                    ratings: {
+                      cleanliness: 5,
+                      foodQuality: 4,
+                      infrastructure: 5,
+                      overall: 5,
+                    },
+                  },
+                  {
+                    student: "Anjali Mehta",
+                    batch: "2024",
+                    comment: "The rooms are spacious and the staff is very helpful.",
+                    ratings: {
+                      cleanliness: 4,
+                      foodQuality: 5,
+                      infrastructure: 4,
+                      overall: 4,
+                    },
+                  },
+                ],
+              },
+              {
+                name: "Moonlight Hostel",
+                hostel_type: "co-ed",
+                capacity: 150,
+                rooms: "Single, Triple",
+                facilities: ["Wi-Fi", "24/7 Security", "Gym", "Mess"],
+                gallery: [
+                  {
+                    url: "https://example.com/moonlight-hostel-1.jpg",
+                    description: "Entrance of Moonlight Hostel",
+                    year: 2023,
+                    photographerCredit: "Alice Johnson",
+                  },
+                  {
+                    url: "https://example.com/moonlight-hostel-2.jpg",
+                    description: "Dining area in Moonlight Hostel",
+                    year: 2023,
+                    photographerCredit: "Bob Brown",
+                  },
+                ],
+                description: "A safe and secure hostel for girls with modern facilities.",
+                reviews: [
+                  {
+                    student: "Priya Singh",
+                    batch: "2025",
+                    comment: "The hostel is very secure and the gym is well-equipped.",
+                    ratings: {
+                      cleanliness: 5,
+                      foodQuality: 4,
+                      infrastructure: 5,
+                      overall: 5,
+                    },
+                  },
+                  {
+                    student: "Anjali Mehta",
+                    batch: "2024",
+                    comment: "The rooms are spacious and the staff is very helpful.",
+                    ratings: {
+                      cleanliness: 4,
+                      foodQuality: 5,
+                      infrastructure: 4,
+                      overall: 4,
+                    },
+                  },
+                ],
+              },
+            ]
           },
           
           clubs: mainData.college_clubs.clubs.map((club: any) => ({
@@ -688,7 +815,7 @@ const CollegePage = () => {
     { id: 'academics', label: 'Academics', icon: BookOpen },
     { id: 'admissions', label: 'Admissions', icon: GraduationCap },
     { id: 'placements', label: 'Placements', icon: Briefcase },
-    { id: 'campus', label: 'Campus Life', icon: Home },
+    { id: 'campus', label: 'Campus', icon: Home },
     { id: 'clubs', label: 'Clubs & Events', icon: Activity },
     { id: 'facilities', label: 'Facilities', icon: Building },
     { id: 'reviews', label: 'Reviews', icon: MessageCircle },
@@ -1707,42 +1834,21 @@ const CollegePage = () => {
 
             {activeTab === 'campus' && (
               <div className="space-y-8">
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Campus Vibe Snapshots</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {college.campusExperience.lifestyleHighlights.map((highlight, index) => {
-                      const icons = [Sparkles, Sun, Moon];
-                      const Icon = icons[index % icons.length];
-                      return (
-                        <div key={index} className="rounded-lg border border-blue-100 bg-gradient-to-br from-blue-50 to-purple-50 p-5">
-                          <Icon className="h-6 w-6 text-blue-600 mb-3" />
-                          <h3 className="font-semibold text-gray-800 mb-2">{highlight.title}</h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">{highlight.description}</p>
-                        </div>
-                      );
-                    })}
+                <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-blue-500">
+                  <div className="flex items-center gap-3 mb-6">
+                  <h2 className="text-2xl font-bold text-blue-700 mb-6">🌟 Campus AI Shots</h2>
+                  <Sparkles className="h-6 w-6 text-blue-600 mb-4 animate-bounce" />
                   </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">A Day on Campus</h2>
-                  <div className="relative pl-6">
-                    <div className="absolute left-2 top-1 bottom-1 w-px bg-blue-100"></div>
-                    {college.campusExperience.dailyTimeline.map((slot, index) => {
-                      const Icon = timelineIcons[index % timelineIcons.length];
-                      const isLast = index === college.campusExperience.dailyTimeline.length - 1;
-                      return (
-                        <div key={index} className={`relative flex gap-4 pb-6 ${isLast ? 'pb-0' : ''}`}>
-                          <div className="absolute -left-[22px] top-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">{slot.time}</p>
-                                                       <p className="text-sm text-gray-700 leading-relaxed">{slot.activity}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {college.campusExperience.lifestyleHighlights.map((highlight, index) => (
+                    <div
+                    key={index}
+                    className="rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-100 via-white to-purple-100 p-6 shadow-lg hover:shadow-xl transition-shadow"
+                    >
+                    <h3 className="font-semibold text-blue-800 mb-2">{highlight.title}</h3>
+                    <p className="text-sm text-gray-700 leading-relaxed">{highlight.description}</p>
+                    </div>
+                  ))}
                   </div>
                 </div>
 
@@ -1828,28 +1934,110 @@ const CollegePage = () => {
 
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Residential Life</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-3">Accommodation Overview</h3>
-                      <p className="text-gray-600">{college.campusExperience.residential.description}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-3">In-Hostel Essentials</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {college.campusExperience.residential.facilities.map((facility, index) => (
-                          <span key={index} className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
-                            {facility}
-                          </span>
-                        ))}
+                  <div className="grid grid-cols-1 gap-6">
+                    {college.campusExperience.residential.map((hostel, index) => (
+                      <div
+                        key={index}
+                        className="rounded-xl border border-gray-200 bg-gray-50 p-5 hover:border-blue-300 transition-colors"
+                      >
+                        <div className="grid grid-cols-5 gap-6">
+                          {/* Left Section */}
+                          <div className="col-span-3">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-lg font-semibold text-gray-800">{hostel.name}</h3>
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  hostel.hostel_type.toLowerCase().includes('girls')
+                                    ? 'bg-pink-100 text-pink-600'
+                                    : hostel.hostel_type.toLowerCase().includes('boys')
+                                    ? 'bg-blue-100 text-blue-600'
+                                    : 'bg-green-100 text-green-600'
+                                }`}
+                              >
+                                {hostel.hostel_type}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-4">{hostel.description}</p>
+                            <div className="text-sm text-gray-600 mb-4">
+                              <p><strong>Capacity:</strong> {hostel.capacity}</p>
+                              <p><strong>Rooms:</strong> {hostel.rooms}</p>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {hostel.facilities.map((facility, facilityIndex) => (
+                                <span
+                                  key={facilityIndex}
+                                  className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm"
+                                >
+                                  {facility}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="flex gap-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
+                              {hostel.gallery.map((image, imageIndex) => (
+                                <div
+                                  key={imageIndex}
+                                  className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
+                                  onClick={() => setSelectedImage(image.url)}
+                                >
+                                  <img
+                                    src={image.url}
+                                    alt={image.description}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors flex items-center justify-center">
+                                    <ImageIcon className="h-8 w-8 text-white opacity-0 hover:opacity-100 transition-opacity" />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Right Section */}
+                          <div className="col-span-2 overflow-y-auto max-h-[350px]">
+                            <div className="space-y-4">
+                              <h4 className="text-md font-semibold text-gray-800">Student Reviews</h4>
+                              {hostel.reviews.map((review, reviewIndex) => (
+                                <div
+                                  key={reviewIndex}
+                                  className="border border-gray-200 rounded-lg p-4 bg-white"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div>
+                                      <p className="font-medium text-gray-800">{review.student}</p>
+                                      <p className="text-sm text-gray-600">{review.batch}</p>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      {Array.from({ length: 5 }).map((_, starIndex) => (
+                                        <Star
+                                          key={starIndex}
+                                          className={`h-4 w-4 ${
+                                            starIndex < review.ratings.overall
+                                              ? 'text-yellow-400 fill-current'
+                                              : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-gray-600 mb-2">{review.comment}</p>
+                                  <div className="grid lg:grid-cols-3 gap-2 text-xs text-gray-600">
+                                    <div>
+                                      <strong>Cleanliness:</strong> {review.ratings.cleanliness}/5
+                                    </div>
+                                    <div>
+                                      <strong>Food Quality:</strong> {review.ratings.foodQuality}/5
+                                    </div>
+                                    <div>
+                                      <strong>Infrastructure:</strong> {review.ratings.infrastructure}/5
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-lg bg-blue-50 p-4">
-                    <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                    <div>
-                      <p className="font-semibold text-gray-800">Hostel Rating: {college.campusExperience.residential.rating}/5</p>
-                      <p className="text-sm text-gray-600">Aggregated from verified student reviews</p>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
