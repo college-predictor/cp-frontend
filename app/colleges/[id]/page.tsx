@@ -15,7 +15,7 @@ import {
   ListChecks, HelpCircle, CheckCircle2, LineChart,
   Globe2, UserCheck, Rocket, Handshake, Sun, Moon,
   Utensils, Dumbbell, HeartPulse, LifeBuoy, Leaf,
-  Bus, Sparkles, Medal, Filter, CheckCircle
+  Bus, Sparkles, Medal, Filter, CheckCircle, XCircle
 } from 'lucide-react';
 
 const socialIconConfig = {
@@ -110,6 +110,7 @@ interface CollegeData {
     medianPackage: string;
     topRecruiters: string[];
     internationalOffers: number;
+    brochureLink?: string;
     salaryTrends: Array<{
       year: number;
       average: string;
@@ -255,6 +256,8 @@ interface CollegeData {
     }>;
     residential: Array<{
       name: string;
+      pros?: string[];
+      cons?: string[];
       hostel_type: string;
       capacity: number;
       rooms: string;
@@ -811,12 +814,12 @@ const CollegePage = () => {
   }
 
   const tabs = [
+    { id: 'campus', label: 'Campus', icon: Home },
+    { id: 'clubs', label: 'Clubs & Events', icon: Activity },
     { id: 'overview', label: 'Overview', icon: Eye },
     { id: 'academics', label: 'Academics', icon: BookOpen },
     { id: 'admissions', label: 'Admissions', icon: GraduationCap },
     { id: 'placements', label: 'Placements', icon: Briefcase },
-    { id: 'campus', label: 'Campus', icon: Home },
-    { id: 'clubs', label: 'Clubs & Events', icon: Activity },
     { id: 'facilities', label: 'Facilities', icon: Building },
     { id: 'reviews', label: 'Reviews', icon: MessageCircle },
     { id: 'gallery', label: 'Gallery', icon: Camera },
@@ -1606,14 +1609,29 @@ const CollegePage = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                           {college.placement.salaryTrends.map((trend) => (
-                            <tr key={trend.year}>
-                              <td className="px-4 py-3 font-medium text-gray-800">{trend.year}</td>
-                              <td className="px-4 py-3 text-gray-600">{trend.average}</td>
-                              <td className="px-4 py-3 text-gray-600">{trend.highest}</td>
-                              <td className="px-4 py-3 text-gray-600">{trend.placementRate}%</td>
-                            </tr>
+                          <tr key={trend.year}>
+                            <td className="px-4 py-3 font-medium text-gray-800">{trend.year}</td>
+                            <td className="px-4 py-3 text-gray-600">{trend.average}</td>
+                            <td className="px-4 py-3 text-gray-600">{trend.highest}</td>
+                            <td className="px-4 py-3 text-gray-600">{trend.placementRate}%</td>
+                          </tr>
                           ))}
                         </tbody>
+                        <tfoot>
+                          <tr>
+                          <td colSpan={4} className="px-4 py-3 text-right">
+                            <Link
+                              href={college.placement.brochureLink ? college.placement.brochureLink : '#'}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              <Download className="h-4 w-4" />
+                              Download Placement Brochure
+                            </Link>
+                          </td>
+                          </tr>
+                        </tfoot>
                       </table>
                     </div>
                   </div>
@@ -1853,47 +1871,46 @@ const CollegePage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Support Ecosystem</h2>
-                    <div className="space-y-4">
-                      {college.campusExperience.supportServices.map((service, index) => {
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                      <h2 className="text-2xl font-bold text-gray-800 mb-6">Support Ecosystem</h2>
+                      <div className="space-y-4">
+                        {college.campusExperience.supportServices.map((service, index) => {
                         const icons = [LifeBuoy, HeartPulse, Medal];
                         const Icon = icons[index % icons.length];
                         return (
                           <div key={index} className="flex gap-4 border border-gray-100 rounded-lg p-4">
-                            <div className="h-10 w-10 flex items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                              <Icon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-gray-800">{service.name}</h3>
-                              <p className="text-sm text-gray-600 leading-relaxed">{service.description}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Dining & Late-night Spots</h2>
-                    <div className="space-y-4">
-                      {college.campusExperience.diningOptions.map((dining, index) => (
-                        <div key={index} className="flex items-start gap-4 rounded-lg border border-gray-100 p-4">
-                          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-rose-50 text-rose-600">
-                            <Utensils className="h-5 w-5" />
+                          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                            <Icon className="h-5 w-5" />
                           </div>
                           <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="font-semibold text-gray-800">{dining.name}</h3>
-                              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{dining.type}</span>
-                              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">Open till {dining.openTill}</span>
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1">Signature: {dining.signature}</p>
+                            <h3 className="font-semibold text-gray-800">{service.name}</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed">{service.description}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                            <strong>Availability:</strong> 24/7 support for all students.
+                            </p>
                           </div>
-                        </div>
-                      ))}
+                          </div>
+                        );
+                        })}
+                      </div>
                     </div>
-                  </div>
+
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                      <h2 className="text-2xl font-bold text-gray-800 mb-6">Wellness Programs</h2>
+                      <div className="space-y-4">
+                        {college.campusExperience.wellnessPrograms.map((program, index) => (
+                          <div key={index} className="flex gap-4 rounded-lg border border-gray-100 p-4">
+                            <div className="h-10 w-10 flex items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                              <Leaf className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-800">{program.name}</h3>
+                              <p className="text-sm text-gray-600 leading-relaxed">{program.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1901,13 +1918,29 @@ const CollegePage = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Sports & Fitness</h2>
                     <div className="space-y-4">
                       {college.campusExperience.sportsAndFitness.map((item, index) => (
-                        <div key={index} className="flex gap-4 rounded-lg border border-gray-100 p-4">
-                          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-green-50 text-green-600">
-                            <Dumbbell className="h-5 w-5" />
+                        <div
+                          key={index}
+                          className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 hover:shadow-md transition-shadow"
+                        >
+                          <div className="relative h-40 bg-gray-200 rounded-t-lg overflow-hidden">
+                            <img
+                              src={item.url} // Placeholder image
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                              <div className="absolute top-2 left-2 bg-rose-100 text-rose-600 px-2 py-1 rounded-full text-xs font-medium">
+                                {item.name}
+                              </div>
+                              <div className="absolute bottom-2 left-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
+                                Open till {item.openTill}
+                              </div>
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed">{item.details}</p>
+                          <div className="p-4">
+                            <h3 className="font-semibold text-gray-800 mb-1">{item.name}</h3>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Dumbbell className="h-4 w-4 text-green-600" />
+                              <span>{item.details}</span>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1915,18 +1948,34 @@ const CollegePage = () => {
                   </div>
 
                   <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Wellness Programs</h2>
-                    <div className="space-y-4">
-                      {college.campusExperience.wellnessPrograms.map((program, index) => (
-                        <div key={index} className="flex gap-4 rounded-lg border border-gray-100 p-4">
-                          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                            <Leaf className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-800">{program.name}</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed">{program.description}</p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Dining & Late-night Spots</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {college.campusExperience.diningOptions.map((dining, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 hover:shadow-md transition-shadow"
+                      >
+                        <div className="relative h-40 bg-gray-200 rounded-t-lg overflow-hidden">
+                          <img
+                            src={dining.url} // Placeholder image
+                            alt={dining.name}
+                            className="w-full h-full object-cover"
+                          />
+                            <div className="absolute top-2 left-2 bg-rose-100 text-rose-600 px-2 py-1 rounded-full text-xs font-medium">
+                              {dining.type}
+                            </div>
+                            <div className="absolute bottom-2 left-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
+                              Open till {dining.openTill}
+                            </div>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-semibold text-gray-800 mb-1">{dining.name}</h3>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <Utensils className="h-4 w-4 text-rose-600" />
+                            <span>Great for late-night cravings</span>
                           </div>
                         </div>
+                      </div>
                       ))}
                     </div>
                   </div>
@@ -1945,22 +1994,57 @@ const CollegePage = () => {
                           <div className="col-span-3">
                             <div className="flex items-center justify-between mb-4">
                               <h3 className="text-lg font-semibold text-gray-800">{hostel.name}</h3>
-                              <span
-                                className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  hostel.hostel_type.toLowerCase().includes('girls')
-                                    ? 'bg-pink-100 text-pink-600'
-                                    : hostel.hostel_type.toLowerCase().includes('boys')
-                                    ? 'bg-blue-100 text-blue-600'
-                                    : 'bg-green-100 text-green-600'
-                                }`}
-                              >
-                                {hostel.hostel_type}
-                              </span>
+                              <div className="flex gap-1">
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-grey-100 text-grey-600">Capacity: {hostel.capacity}</span>
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-grey-100 text-grey-600">Rooms: {hostel.rooms}</span>
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    hostel.hostel_type.toLowerCase().includes('girls')
+                                      ? 'bg-pink-100 text-pink-600'
+                                      : hostel.hostel_type.toLowerCase().includes('boys')
+                                      ? 'bg-blue-100 text-blue-600'
+                                      : 'bg-green-100 text-green-600'
+                                  }`}
+                                >
+                                  {hostel.hostel_type}
+                                </span>
+                              </div>
                             </div>
                             <p className="text-sm text-gray-600 mb-4">{hostel.description}</p>
-                            <div className="text-sm text-gray-600 mb-4">
-                              <p><strong>Capacity:</strong> {hostel.capacity}</p>
-                              <p><strong>Rooms:</strong> {hostel.rooms}</p>
+                            <div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm mb-6">
+                                {/* Pros */}
+                                <div>
+                                  <ul className="space-y-3">
+                                      <li key={index} className="flex items-start gap-3">
+                                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                                        <span className="text-gray-700">Pro 1</span>
+                                      </li>
+                                    {hostel.pros?.map((pro, index) => (
+                                      <li key={index} className="flex items-start gap-3">
+                                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                                        <span className="text-gray-700">{pro}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+
+                                {/* Cons */}
+                                <div>
+                                  <ul className="space-y-3">
+                                      <li key={index} className="flex items-start gap-3">
+                                        <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
+                                        <span className="text-gray-700">Con 1</span>
+                                      </li>
+                                    {hostel.cons?.map((con, index) => (
+                                      <li key={index} className="flex items-start gap-3">
+                                        <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
+                                        <span className="text-gray-700">{con}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
                             </div>
                             <div className="flex flex-wrap gap-2 mb-4">
                               {hostel.facilities.map((facility, facilityIndex) => (
