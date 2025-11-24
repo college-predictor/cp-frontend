@@ -11,11 +11,12 @@ import {
   GraduationCap, Building, Briefcase, Trophy, Clock,
   DollarSign, Activity, Coffee, Wifi, Car, Shield,
   Camera, Video, FileText, Download, Eye, MessageCircle,
-  ThumbsUp, MapPin as LocationIcon, Navigation, FileCheck,
+  ThumbsUp, Navigation, FileCheck,
   ListChecks, HelpCircle, CheckCircle2, LineChart,
   Globe2, UserCheck, Rocket, Handshake, Sun, Moon,
   Utensils, Dumbbell, HeartPulse, LifeBuoy, Leaf,
-  Bus, Sparkles, Medal, Filter, CheckCircle, XCircle
+  Bus, Sparkles, Medal, Filter, CheckCircle, XCircle,
+  X, ChevronLeft, IndianRupee
 } from 'lucide-react';
 
 const socialIconConfig = {
@@ -76,32 +77,29 @@ interface CollegeData {
     totalReviews: number;
   };
   fee_structures: {
-    undergraduate?: {
-      [degreeType: string]: {
-        tuition: string;
-        mess?: string;
-        hostel?: string;
-        other?: string;
-        total: string;
+    undergraduate?: Array<{
+      degreeType: string;
+      description?: string;
+      fees: {
+        [feeKey: string]: string | undefined;
       }
-    };
-    postgraduate?: {
-      [degreeType: string]: {
-        tuition: string;
-        mess?: string;
-        hostel?: string;
-        other?: string;
-        total: string;
-      }
-    };
-    phd?: {
-      tuition: string;
-      mess?: string;
-      hostel?: string;
-      other?: string;
-      total: string;
+    }>;
+    postgraduate?: Array<{
+      degreeType: string;
+      description?: string;
+      fees: {
+        [feeKey: string]: string | undefined;
+      },
       stipend?: string;
-    };
+    }>;
+    doctoral?: Array<{
+      degreeType: string;
+      description?: string;
+      fees: {
+        [feeKey: string]: string | undefined;
+      },
+      stipend?: string;
+    }>;
   };
   placement: {
     averagePackage: string;
@@ -242,6 +240,12 @@ interface CollegeData {
     }>;
     diningOptions: Array<{
       name: string;
+      gallery: Array<{
+        url: string;
+        description: string;
+        year: number;
+        photographerCredit: string;
+      }>;
       type: string;
       signature: string;
       openTill: string;
@@ -346,27 +350,29 @@ interface CollegeData {
   alumniNetwork: {
     totalAlumni: number;
     notableAlumni: Array<{
-      name: string;
-      batch: string;
-      position: string;
-      company: string;
+      name?: string;
+      batch?: number;
+      position?: string;
+      organisation?: string;
+      branch?: string;
+      achievement?: string;
       image: string;
     }>;
   };
   scholarships: Array<{
     name: string;
-    amount: string;
+    benefits: string[];
     eligibility: string;
     description: string;
     deadline?: string;
     applyLink?: string;
+    referenceLinks?: string[];
   }>;
   startups: Array<{
-    name: string;
-    founder: string;
+    startup_name: string;
     description: string;
-    funding: string;
     image: string;
+    tags: string[];
   }>;
   news: Array<{
     title: string;
@@ -397,6 +403,8 @@ const CollegePage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedImageCategory, setSelectedImageCategory] = useState<keyof CollegeData['images']>('campus');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [currentImageCategory, setCurrentImageCategory] = useState<keyof CollegeData['images']>('campus');
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -404,6 +412,7 @@ const CollegePage = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [selectedMethodType, setSelectedMethodType] = useState(0);
   const [expandedMethod, setExpandedMethod] = useState(0);
+  const [scholarshipSearch, setScholarshipSearch] = useState('');
 
 
   useEffect(() => {
@@ -454,8 +463,25 @@ const CollegePage = () => {
           
           ratings: ratingsData,
           
-          fee_structures: mainData.college_fee_structure,
-          
+          fee_structures: {
+            undergraduate: mainData.college_fee_structure.undergraduate?.map((data: any) => ({
+              degreeType: data.programe_name,
+              description: data.description,
+              fees: data.fees
+            })),
+            postgraduate: mainData.college_fee_structure.postgraduate?.map((data: any) => ({
+              degreeType: data.programe_name,
+              description: data.description,
+              fees: data.fees,
+              stipend: data.stipend
+            })),
+            doctoral: mainData.college_fee_structure.doctoral?.map((data: any) => ({
+              degreeType: data.programe_name,
+              description: data.description,
+              fees: data.fees,
+              stipend: data.stipend
+            }))
+          },          
           placement: {
             averagePackage: mainData.college_placements.averagePackage,
             highestPackage: mainData.college_placements.highestPackage,
@@ -497,146 +523,7 @@ const CollegePage = () => {
             diningOptions: mainData.college_campus_experience.diningOptions,
             sportsAndFitness: mainData.college_campus_experience.sportsAndFitness,
             wellnessPrograms: mainData.college_campus_experience.wellnessPrograms,
-            residential: [
-              {
-                name: "Sunrise Hostel",
-                hostel_type: "boys",
-                capacity: 200,
-                rooms: "Single, Double",
-                facilities: ["Wi-Fi", "Laundry", "Common Room", "Mess"],
-                gallery: [
-                  {
-                    url: "https://example.com/sunrise-hostel-1.jpg",
-                    description: "Front view of Sunrise Hostel",
-                    year: 2023,
-                    photographerCredit: "John Doe",
-                  },
-                  {
-                    url: "https://example.com/sunrise-hostel-2.jpg",
-                    description: "Common room in Sunrise Hostel",
-                    year: 2023,
-                    photographerCredit: "Jane Smith",
-                  },
-                ],
-                description: "A modern boys' hostel with all essential amenities.",
-                reviews: [
-                  {
-                    student: "Rahul Sharma",
-                    batch: "2024",
-                    comment: "The hostel is clean and well-maintained. Food quality is good.",
-                    ratings: {
-                      cleanliness: 4,
-                      foodQuality: 4,
-                      infrastructure: 5,
-                      overall: 4,
-                    },
-                  },
-                  {
-                    student: "Amit Verma",
-                    batch: "2023",
-                    comment: "Great facilities but the Wi-Fi speed could be improved.",
-                    ratings: {
-                      cleanliness: 5,
-                      foodQuality: 3,
-                      infrastructure: 4,
-                      overall: 4,
-                    },
-                  },
-                ],
-              },
-              {
-                name: "Moonlight Hostel",
-                hostel_type: "girls",
-                capacity: 150,
-                rooms: "Single, Triple",
-                facilities: ["Wi-Fi", "24/7 Security", "Gym", "Mess"],
-                gallery: [
-                  {
-                    url: "https://example.com/moonlight-hostel-1.jpg",
-                    description: "Entrance of Moonlight Hostel",
-                    year: 2023,
-                    photographerCredit: "Alice Johnson",
-                  },
-                  {
-                    url: "https://example.com/moonlight-hostel-2.jpg",
-                    description: "Dining area in Moonlight Hostel",
-                    year: 2023,
-                    photographerCredit: "Bob Brown",
-                  },
-                ],
-                description: "A safe and secure hostel for girls with modern facilities.",
-                reviews: [
-                  {
-                    student: "Priya Singh",
-                    batch: "2025",
-                    comment: "The hostel is very secure and the gym is well-equipped.",
-                    ratings: {
-                      cleanliness: 5,
-                      foodQuality: 4,
-                      infrastructure: 5,
-                      overall: 5,
-                    },
-                  },
-                  {
-                    student: "Anjali Mehta",
-                    batch: "2024",
-                    comment: "The rooms are spacious and the staff is very helpful.",
-                    ratings: {
-                      cleanliness: 4,
-                      foodQuality: 5,
-                      infrastructure: 4,
-                      overall: 4,
-                    },
-                  },
-                ],
-              },
-              {
-                name: "Moonlight Hostel",
-                hostel_type: "co-ed",
-                capacity: 150,
-                rooms: "Single, Triple",
-                facilities: ["Wi-Fi", "24/7 Security", "Gym", "Mess"],
-                gallery: [
-                  {
-                    url: "https://example.com/moonlight-hostel-1.jpg",
-                    description: "Entrance of Moonlight Hostel",
-                    year: 2023,
-                    photographerCredit: "Alice Johnson",
-                  },
-                  {
-                    url: "https://example.com/moonlight-hostel-2.jpg",
-                    description: "Dining area in Moonlight Hostel",
-                    year: 2023,
-                    photographerCredit: "Bob Brown",
-                  },
-                ],
-                description: "A safe and secure hostel for girls with modern facilities.",
-                reviews: [
-                  {
-                    student: "Priya Singh",
-                    batch: "2025",
-                    comment: "The hostel is very secure and the gym is well-equipped.",
-                    ratings: {
-                      cleanliness: 5,
-                      foodQuality: 4,
-                      infrastructure: 5,
-                      overall: 5,
-                    },
-                  },
-                  {
-                    student: "Anjali Mehta",
-                    batch: "2024",
-                    comment: "The rooms are spacious and the staff is very helpful.",
-                    ratings: {
-                      cleanliness: 4,
-                      foodQuality: 5,
-                      infrastructure: 4,
-                      overall: 4,
-                    },
-                  },
-                ],
-              },
-            ]
+            residential: mainData.college_campus_experience.residential
           },
           
           clubs: mainData.college_clubs.clubs.map((club: any) => ({
@@ -691,21 +578,13 @@ const CollegePage = () => {
             }))
           },
           
-          scholarships: mainData.college_scholarships.scholarships.map((s: any) => ({
-            name: s.name,
-            amount: s.amount,
-            eligibility: s.eligibility,
-            description: s.description,
-            deadline: s.deadline,
-            applyLink: s.applyLink
-          })),
+          scholarships: mainData.college_scholarships.scholarships,
           
           startups: mainData.college_startups.startups.map((s: any) => ({
-            name: s.name,
-            founder: s.founder,
+            startup_name: s.startup_name,
             description: s.description,
-            funding: s.funding,
-            image: s.image
+            image: s.image,
+            tags: s.tags
           })),
           
           news: newsData.items.map((n: any) => ({
@@ -776,6 +655,19 @@ const CollegePage = () => {
     return colors[degree] || 'gray';
   };
 
+  // Helper to format fee keys like student_medical_insurance -> Student Medical Insurance
+  const formatFeeLabel = (key: string) => {
+    return key
+      // Insert space between camelCase boundaries
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      // Replace underscores and hyphens with spaces
+      .replace(/[_\-]+/g, ' ')
+      .split(' ')
+      .filter(Boolean)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -817,6 +709,7 @@ const CollegePage = () => {
     { id: 'campus', label: 'Campus', icon: Home },
     { id: 'clubs', label: 'Clubs & Events', icon: Activity },
     { id: 'overview', label: 'Overview', icon: Eye },
+    { id: 'fees', label: 'Fees', icon: IndianRupee },
     { id: 'academics', label: 'Academics', icon: BookOpen },
     { id: 'admissions', label: 'Admissions', icon: GraduationCap },
     { id: 'placements', label: 'Placements', icon: Briefcase },
@@ -895,8 +788,8 @@ const CollegePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-purple-700 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <div className="relative min-h-[400px] flex items-center justify-center text-white" style={{backgroundImage: 'url(https://picsum.photos/seed/sunrise2/800/400)', backgroundSize: 'cover', backgroundPosition: 'center'}}>
+        <div className="absolute inset-0 bg-black/60"></div>
         <div className="relative container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
             <div className="lg:col-span-2">
@@ -909,48 +802,48 @@ const CollegePage = () => {
                 </div>
               </div>
               
-              <h1 className="text-4xl lg:text-5xl font-bold mb-4">{college.name}</h1>
-              <p className="text-xl opacity-90 mb-6 flex items-center">
-                <MapPin className="h-5 w-5 mr-2" />
+              <h1 className="text-2xl lg:text-3xl font-bold mb-3 drop-shadow-lg">{college.name}</h1>
+              <p className="text-base opacity-90 mb-4 flex items-center drop-shadow-lg">
+                <MapPin className="h-4 w-4 mr-2" />
                 {college.location.address}, {college.location.city}, {college.location.state}
               </p>
               
-              <div className="flex flex-wrap gap-4 mb-6">
-                <div className="flex items-center bg-white/20 px-4 py-2 rounded-lg">
-                  <Star className="h-5 w-5 text-yellow-400 fill-current mr-2" />
+              <div className="flex flex-wrap gap-3 mb-4">
+                <div className="flex items-center bg-white/20 px-3 py-1.5 rounded-lg text-sm">
+                  <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
                   <span className="font-semibold">{college.ratings.overall}</span>
                   <span className="ml-1 opacity-75">({college.ratings.totalReviews} reviews)</span>
                 </div>
-                <div className="flex items-center bg-white/20 px-4 py-2 rounded-lg">
-                  <TrendingUp className="h-5 w-5 mr-2" />
+                <div className="flex items-center bg-white/20 px-3 py-1.5 rounded-lg text-sm">
+                  <TrendingUp className="h-4 w-4 mr-1" />
                   <span>{college.placement.averagePackage} avg package</span>
                 </div>
-                <div className="flex items-center bg-white/20 px-4 py-2 rounded-lg">
-                  <Users className="h-5 w-5 mr-2" />
+                <div className="flex items-center bg-white/20 px-3 py-1.5 rounded-lg text-sm">
+                  <Users className="h-4 w-4 mr-1" />
                   <span>{college.placement.placementRate}% placement rate</span>
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setIsBookmarked(!isBookmarked)}
-                  className={`flex items-center px-6 py-3 rounded-lg font-semibold transition-colors ${
+                  className={`flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
                     isBookmarked ? 'bg-red-500 hover:bg-red-600' : 'bg-white/20 hover:bg-white/30'
                   }`}
                 >
-                  <Heart className={`h-5 w-5 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
+                  <Heart className={`h-4 w-4 mr-1 ${isBookmarked ? 'fill-current' : ''}`} />
                   {isBookmarked ? 'Saved' : 'Save'}
                 </button>
-                <button className="flex items-center px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-semibold transition-colors">
-                  <Share2 className="h-5 w-5 mr-2" />
+                <button className="flex items-center px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-semibold text-sm transition-colors">
+                  <Share2 className="h-4 w-4 mr-1" />
                   Share
                 </button>
                 <Link
                   href={college.contact.website}
                   target="_blank"
-                  className="flex items-center px-6 py-3 bg-green-500 hover:bg-green-600 rounded-lg font-semibold transition-colors"
+                  className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg font-semibold text-sm transition-colors"
                 >
-                  <ExternalLink className="h-5 w-5 mr-2" />
+                  <ExternalLink className="h-4 w-4 mr-1" />
                   Official Website
                 </Link>
               </div>
@@ -1017,79 +910,132 @@ const CollegePage = () => {
                   <div dangerouslySetInnerHTML={{ __html: college.aboutHTML }} />
                 </div>
 
-                {/* Fees Structure */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Fees Structure</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(college.fee_structures).map(([graduationLevel, degreeTypes]) => (
-                      <div key={graduationLevel} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white hover:shadow-md transition-shadow">
-                        <h3 className="font-semibold text-gray-800 mb-2 text-sm">{graduationLevel}</h3>
-                        <div className="space-y-3">
-                          {Object.entries(degreeTypes as Record<string, any>).map(([degreeType, feeObj]) => (
-                            <div key={degreeType} className="border border-gray-100 rounded-md p-2 bg-white">
-                              <div className="font-semibold text-blue-700 mb-1 text-xs">{degreeType}</div>
-                              <div className="space-y-1">
-                                {Object.entries(feeObj).map(([feeKey, feeValue]) => {
-                                  if (!feeValue) return null;
-                                  return (
-                                    <div key={feeKey} className="flex justify-between text-sm">
-                                      <span className="capitalize text-gray-600">{feeKey.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                      <span className="font-medium text-gray-800">{String(feeValue)}</span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
                 {/* Scholarships & Financial Aid */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Scholarships & Financial Aid</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {college.scholarships.map((scholarship, index) => (
-                      <div key={index} className="border border-blue-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Scholarships & Financial Aid</h2>
+                    <div className="relative w-64">
+                      <input
+                        type="text"
+                        placeholder="Search scholarships..."
+                        value={scholarshipSearch}
+                        onChange={(e) => setScholarshipSearch(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                      <svg
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                    {college.scholarships
+                      .filter((scholarship) => {
+                        if (!scholarshipSearch) return true;
+                        const searchLower = scholarshipSearch.toLowerCase();
+                        return (
+                          scholarship.name.toLowerCase().includes(searchLower) ||
+                          scholarship.description?.toLowerCase().includes(searchLower) ||
+                          scholarship.eligibility?.toLowerCase().includes(searchLower) ||
+                          scholarship.benefits?.some(benefit => benefit.toLowerCase().includes(searchLower))
+                        );
+                      })
+                      .map((scholarship, index) => (
+                      <div key={index} className="border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-lg hover:shadow-md transition-all">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
-                            <h3 className="font-semibold text-gray-800 text-sm mb-1">{scholarship.name}</h3>
-                            <p className="text-lg font-bold text-blue-600">{scholarship.amount}</p>
+                            <div className="flex items-center gap-3 mb-2">
+                              <Award className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                              <h3 className="font-bold text-gray-900 text-lg">{scholarship.name}</h3>
+                            </div>
+                            {scholarship.description && (
+                              <p className="text-sm text-gray-600 leading-relaxed ml-8">{scholarship.description}</p>
+                            )}
                           </div>
-                          <Award className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                        </div>
-                        
-                        <p className="text-xs text-gray-600 mb-3 line-clamp-2">{scholarship.description}</p>
-                        
-                        <div className="space-y-2 mb-3">
-                          <div className="flex items-start gap-2">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-xs text-gray-600">{scholarship.eligibility}</p>
-                          </div>
-                          
                           {scholarship.deadline && (
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
-                              <p className="text-xs text-gray-600">
-                                <span className="font-medium">Deadline:</span> {scholarship.deadline}
-                              </p>
+                            <div className="flex items-center gap-1.5 bg-orange-100 text-orange-700 px-3 py-1 rounded-full ml-4">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span className="text-xs font-medium whitespace-nowrap">{scholarship.deadline}</span>
                             </div>
                           )}
                         </div>
                         
-                        {scholarship.applyLink && (
-                          <Link
-                            href={scholarship.applyLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            Apply Now
-                          </Link>
-                        )}
+                        {/* Content Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-8">
+                          {/* Benefits */}
+                          {scholarship.benefits && scholarship.benefits.length > 0 && (
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                Key Benefits
+                              </h4>
+                              <ul className="space-y-1.5 pl-6">
+                                {scholarship.benefits.map((benefit, idx) => (
+                                  <li key={idx} className="text-sm text-gray-700 list-disc">
+                                    {benefit}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {/* Eligibility */}
+                          {scholarship.eligibility && (
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                                Eligibility
+                              </h4>
+                              <p className="text-sm text-gray-700 pl-6">{scholarship.eligibility}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center gap-3 mt-4 ml-8 pt-4 border-t border-gray-200">
+                          {/* Reference Links */}
+                          {scholarship.referenceLinks && scholarship.referenceLinks.length > 0 && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-semibold text-gray-600">Resources:</span>
+                              {scholarship.referenceLinks.map((link, idx) => (
+                                <Link
+                                  key={idx}
+                                  href={link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded transition-colors"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  Link {idx + 1}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Apply Button */}
+                          {scholarship.applyLink && (
+                            <Link
+                              href={scholarship.applyLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors ml-auto"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Apply Now
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1137,44 +1083,97 @@ const CollegePage = () => {
 
                 {/* Alumni Network */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Notable Alumni</h2>
-                  <div className="text-center mb-6">
-                    <div className="text-3xl font-bold text-blue-600">{college.alumniNetwork.totalAlumni.toLocaleString()}+</div>
-                    <div className="text-gray-600">Alumni Worldwide</div>
+                  <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Notable Alumni</h2>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600">{college.alumniNetwork.totalAlumni.toLocaleString()}+</div>
+                    <div className="text-sm text-gray-600">Alumni Worldwide</div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {college.alumniNetwork.notableAlumni.map((alumni, index) => (
-                      <div key={index} className="text-center">
-                        <img src={alumni.image} alt={alumni.name} className="w-20 h-20 rounded-full mx-auto mb-3 object-cover" />
-                        <h3 className="font-semibold text-gray-800">{alumni.name}</h3>
-                        <p className="text-sm text-gray-600">{alumni.position}</p>
-                        <p className="text-sm text-blue-600">{alumni.company}</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                  {college.alumniNetwork.notableAlumni.map((alumni, index) => (
+                    <div key={index} className="bg-gradient-to-br from-blue-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 transition-all">
+                    {/* Alumni Image */}
+                    <div className="flex justify-center mb-3">
+                      <img 
+                      src={alumni.image} 
+                      alt={alumni.name || 'Alumni'} 
+                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+                      />
+                    </div>
+                    
+                    {/* Alumni Details */}
+                    <div className="space-y-2">
+                      {alumni.name && (
+                      <h3 className="font-bold text-gray-900 text-center text-sm line-clamp-2 min-h-[2.5rem]">
+                        {alumni.name}
+                      </h3>
+                      )}
+                      
+                      {alumni.position && (
+                      <p className="text-xs text-gray-700 text-center font-medium line-clamp-1">
+                        {alumni.position}
+                      </p>
+                      )}
+                      
+                      {alumni.organisation && (
+                      <div className="flex items-center justify-center gap-1">
+                        <Building className="h-3 w-3 text-blue-600 flex-shrink-0" />
+                        <p className="text-xs text-blue-600 font-semibold line-clamp-1">
+                        {alumni.organisation}
+                        </p>
                       </div>
-                    ))}
+                      )}
+                      
+                      <div className="flex items-center justify-center gap-3 pt-2">
+                      {alumni.batch && (
+                        <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
+                        <GraduationCap className="h-3 w-3 text-gray-600" />
+                        <span className="text-xs text-gray-600 font-medium">{alumni.batch}</span>
+                        </div>
+                      )}
+                      
+                      {alumni.branch && (
+                        <div className="flex items-center gap-1 bg-purple-100 px-2 py-1 rounded-full">
+                        <BookOpen className="h-3 w-3 text-purple-600" />
+                        <span className="text-xs text-purple-600 font-medium line-clamp-1">{alumni.branch}</span>
+                        </div>
+                      )}
+                      </div>
+                      
+                      {alumni.achievement && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <div className="flex items-start gap-2 bg-yellow-50 rounded-lg p-2">
+                        <Trophy className="h-3.5 w-3.5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-gray-700 leading-relaxed line-clamp-3">
+                          {alumni.achievement}
+                        </p>
+                        </div>
+                      </div>
+                      )}
+                    </div>
+                    </div>
+                  ))}
                   </div>
                 </div>
 
                 {/* Startups */}
                 <div className="bg-white rounded-xl shadow-sm p-6">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Successful Startups</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {college.startups.map((startup, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-center mb-3">
-                          <img src={startup.image} alt={startup.name} className="w-12 h-12 rounded-lg mr-3 object-cover" />
-                          <div>
-                            <h3 className="font-semibold text-gray-800">{startup.name}</h3>
-                            <p className="text-sm text-gray-600">Founded by {startup.founder}</p>
-                          </div>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-2">{startup.description}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-medium">
-                            {startup.funding} funding
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[400px] overflow-y-auto pr-2">
+                  {college.startups.map((startup, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center mb-3">
+                    <img src={startup.image} alt={startup.startup_name} className="w-12 h-12 rounded-lg mr-3 object-cover" />
+                    <div>
+                    <h3 className="font-semibold text-gray-800">{startup.startup_name}</h3>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 text-sm mb-3">{startup.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                  </div>
+                  </div>
+                  ))}
                   </div>
                 </div>
               </div>
@@ -1373,6 +1372,192 @@ const CollegePage = () => {
                         </div>
                       )}
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'fees' && (
+              <div className="space-y-8">
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                    <IndianRupee className="h-6 w-6 text-blue-600" />
+                    Fees Structure
+                  </h2>
+                  <div className="space-y-8">
+                    {/* Undergraduate Programs */}
+                    {college.fee_structures.undergraduate && college.fee_structures.undergraduate.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                          <GraduationCap className="h-5 w-5 text-blue-600" />
+                          Undergraduate Programs
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {college.fee_structures.undergraduate.map((program, index) => {
+                            let totalFee = program.fees.total || program.fees.Total || program.fees.totalFee;
+                            if (!totalFee) {
+                              const sum = Object.entries(program.fees).reduce((acc, [key, value]) => {
+                                if (value && key.toLowerCase() !== 'total' && key.toLowerCase() !== 'totalfee') {
+                                  const numValue = parseFloat(value.toString().replace(/[^0-9.-]/g, ''));
+                                  return acc + (isNaN(numValue) ? 0 : numValue);
+                                }
+                                return acc;
+                              }, 0);
+                              totalFee = sum > 0 ? `₹${sum.toLocaleString()}` : 'Contact College';
+                            }
+                            return (
+                              <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-white hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className="flex-1">
+                                    <h4 className="font-semibold text-gray-800 mb-2">{program.degreeType}</h4>
+                                    {program.description && (
+                                      <div className="bg-blue-100 border-l-4 border-blue-500 p-2 mb-3 rounded">
+                                        <p className="text-xs text-gray-700 font-medium">{program.description}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  {Object.entries(program.fees).map(([feeKey, feeValue]) => {
+                                    if (!feeValue || feeKey.toLowerCase() === 'total' || feeKey.toLowerCase() === 'totalfee') return null;
+                                    return (
+                                      <div key={feeKey} className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600">{formatFeeLabel(feeKey)}</span>
+                                        <span className="font-semibold text-gray-800">{feeValue}</span>
+                                      </div>
+                                    );
+                                  })}
+                                  <div className="flex justify-between items-center text-sm pt-2 mt-2 border-t-2 border-blue-300">
+                                    <span className="text-blue-700 font-bold uppercase tracking-wide">Total Fees</span>
+                                    <span className="font-bold text-lg text-blue-700">{totalFee}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Postgraduate Programs */}
+                    {college.fee_structures.postgraduate && college.fee_structures.postgraduate.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                          <Award className="h-5 w-5 text-green-600" />
+                          Postgraduate Programs
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {college.fee_structures.postgraduate.map((program, index) => {
+                            let totalFee = program.fees.total || program.fees.Total || program.fees.totalFee;
+                            if (!totalFee) {
+                              const sum = Object.entries(program.fees).reduce((acc, [key, value]) => {
+                                if (value && key.toLowerCase() !== 'total' && key.toLowerCase() !== 'totalfee') {
+                                  const numValue = parseFloat(value.toString().replace(/[^0-9.-]/g, ''));
+                                  return acc + (isNaN(numValue) ? 0 : numValue);
+                                }
+                                return acc;
+                              }, 0);
+                              totalFee = sum > 0 ? `₹${sum.toLocaleString()}` : 'Contact College';
+                            }
+                            return (
+                              <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-green-50 to-white hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className="flex-1">
+                                    <h4 className="font-semibold text-gray-800 mb-2">{program.degreeType}</h4>
+                                    {program.description && (
+                                      <div className="bg-green-100 border-l-4 border-green-500 p-2 mb-3 rounded">
+                                        <p className="text-xs text-gray-700 font-medium">{program.description}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  {Object.entries(program.fees).map(([feeKey, feeValue]) => {
+                                    if (!feeValue || feeKey.toLowerCase() === 'total' || feeKey.toLowerCase() === 'totalfee') return null;
+                                    return (
+                                      <div key={feeKey} className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600">{formatFeeLabel(feeKey)}</span>
+                                        <span className="font-semibold text-gray-800">{feeValue}</span>
+                                      </div>
+                                    );
+                                  })}
+                                  <div className="flex justify-between items-center text-sm pt-2 mt-2 border-t-2 border-green-300">
+                                    <span className="text-green-700 font-bold uppercase tracking-wide">Total Fees</span>
+                                    <span className="font-bold text-lg text-green-700">{totalFee}</span>
+                                  </div>
+                                  {program.stipend && (
+                                    <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-200">
+                                      <span className="text-green-600 font-medium">Stipend</span>
+                                      <span className="font-semibold text-green-600">{program.stipend}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Doctoral Programs */}
+                    {college.fee_structures.doctoral && college.fee_structures.doctoral.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                          <Trophy className="h-5 w-5 text-purple-600" />
+                          Doctoral Programs
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {college.fee_structures.doctoral.map((program, index) => {
+                            let totalFee = program.fees.total || program.fees.Total || program.fees.totalFee;
+                            if (!totalFee) {
+                              const sum = Object.entries(program.fees).reduce((acc, [key, value]) => {
+                                if (value && key.toLowerCase() !== 'total' && key.toLowerCase() !== 'totalfee') {
+                                  const numValue = parseFloat(value.toString().replace(/[^0-9.-]/g, ''));
+                                  return acc + (isNaN(numValue) ? 0 : numValue);
+                                }
+                                return acc;
+                              }, 0);
+                              totalFee = sum > 0 ? `₹${sum.toLocaleString()}` : 'Contact College';
+                            }
+                            return (
+                              <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-purple-50 to-white hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className="flex-1">
+                                    <h4 className="font-semibold text-gray-800 mb-2">{program.degreeType}</h4>
+                                    {program.description && (
+                                      <div className="bg-purple-100 border-l-4 border-purple-500 p-2 mb-3 rounded">
+                                        <p className="text-xs text-gray-700 font-medium">{program.description}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  {Object.entries(program.fees).map(([feeKey, feeValue]) => {
+                                    if (!feeValue || feeKey.toLowerCase() === 'total' || feeKey.toLowerCase() === 'totalfee') return null;
+                                    return (
+                                      <div key={feeKey} className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600">{formatFeeLabel(feeKey)}</span>
+                                        <span className="font-semibold text-gray-800">{feeValue}</span>
+                                      </div>
+                                    );
+                                  })}
+                                  <div className="flex justify-between items-center text-sm pt-2 mt-2 border-t-2 border-purple-300">
+                                    <span className="text-purple-700 font-bold uppercase tracking-wide">Total Fees</span>
+                                    <span className="font-bold text-lg text-purple-700">{totalFee}</span>
+                                  </div>
+                                  {program.stipend && (
+                                    <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-200">
+                                      <span className="text-purple-600 font-medium">Stipend</span>
+                                      <span className="font-semibold text-purple-600">{program.stipend}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1915,69 +2100,78 @@ const CollegePage = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Sports & Fitness</h2>
-                    <div className="space-y-4">
-                      {college.campusExperience.sportsAndFitness.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 hover:shadow-md transition-shadow"
-                        >
-                          <div className="relative h-40 bg-gray-200 rounded-t-lg overflow-hidden">
-                            <img
-                              src={item.url} // Placeholder image
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
-                              <div className="absolute top-2 left-2 bg-rose-100 text-rose-600 px-2 py-1 rounded-full text-xs font-medium">
-                                {item.name}
-                              </div>
-                              <div className="absolute bottom-2 left-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
-                                Open till {item.openTill}
-                              </div>
-                          </div>
-                          <div className="p-4">
-                            <h3 className="font-semibold text-gray-800 mb-1">{item.name}</h3>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <Dumbbell className="h-4 w-4 text-green-600" />
-                              <span>{item.details}</span>
-                            </div>
-                          </div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Sports & Fitness</h2>
+                  <div className="space-y-4">
+                    {college.campusExperience.sportsAndFitness.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 hover:shadow-md transition-shadow"
+                    >
+                      <div className="relative h-40 bg-gray-200 rounded-t-lg overflow-hidden">
+                      <img
+                        src={item.url} // Placeholder image
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                        <div className="absolute top-2 left-2 bg-rose-100 text-rose-600 px-2 py-1 rounded-full text-xs font-medium">
+                        {item.name}
                         </div>
-                      ))}
+                        <div className="absolute bottom-2 left-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
+                        Open till {item.openTill}
+                        </div>
+                      </div>
+                      <div className="p-4">
+                      <h3 className="font-semibold text-gray-800 mb-1">{item.name}</h3>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Dumbbell className="h-4 w-4 text-green-600" />
+                        <span>{item.details}</span>
+                      </div>
+                      </div>
                     </div>
+                    ))}
+                  </div>
                   </div>
 
                   <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Dining & Late-night Spots</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {college.campusExperience.diningOptions.map((dining, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 hover:shadow-md transition-shadow"
-                      >
-                        <div className="relative h-40 bg-gray-200 rounded-t-lg overflow-hidden">
-                          <img
-                            src={dining.url} // Placeholder image
-                            alt={dining.name}
-                            className="w-full h-full object-cover"
-                          />
-                            <div className="absolute top-2 left-2 bg-rose-100 text-rose-600 px-2 py-1 rounded-full text-xs font-medium">
-                              {dining.type}
-                            </div>
-                            <div className="absolute bottom-2 left-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
-                              Open till {dining.openTill}
-                            </div>
-                        </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold text-gray-800 mb-1">{dining.name}</h3>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <Utensils className="h-4 w-4 text-rose-600" />
-                            <span>Great for late-night cravings</span>
-                          </div>
-                        </div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Dining & Late-night Spots</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {college.campusExperience.diningOptions.map((dining, index) => (
+                    <div
+                    key={index}
+                    className="flex flex-col rounded-lg border border-gray-200 bg-gray-50 hover:shadow-md transition-shadow"
+                    >
+                    <div className="relative h-40 bg-gray-200 rounded-t-lg overflow-hidden">
+                      {dining.gallery && dining.gallery.length > 0 && (
+                      <img
+                        src={dining.gallery[0].url}
+                        alt={dining.gallery[0].description}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => setSelectedImage(dining.gallery[0].url)}
+                      />
+                      )}
+                      <div className="absolute bottom-2 left-2 bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">
+                      Open till {dining.openTill}
                       </div>
-                      ))}
+                      {dining.gallery && dining.gallery.length > 1 && (
+                      <div className="absolute top-2 right-2 bg-black/60 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                        <Camera className="h-3 w-3" />
+                        +{dining.gallery.length - 1}
+                      </div>
+                      )}
                     </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-800 mb-1">{dining.name}</h3>
+                      <div className="bg-blue-100 text-rose-600 px-2 py-1 my-2 rounded-full text-xs font-medium">
+                      {dining.type}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                      <Utensils className="h-4 w-4 text-rose-600" />
+                      <span>{dining.signature}</span>
+                      </div>
+                    </div>
+                    </div>
+                    ))}
+                  </div>
                   </div>
                 </div>
 
@@ -2512,7 +2706,11 @@ const CollegePage = () => {
                       <div
                         key={index}
                         className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform"
-                        onClick={() => setSelectedImage(image.url)}
+                        onClick={() => {
+                          setSelectedImage(image.url);
+                          setSelectedImageIndex(index);
+                          setCurrentImageCategory(selectedImageCategory);
+                        }}
                       >
                         <img src={image.url} alt={image.description} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors flex items-center justify-center">
@@ -2738,16 +2936,101 @@ const CollegePage = () => {
       </div>
 
       {/* Image Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
-          <div className="relative max-w-4xl max-h-full">
-            <img src={selectedImage} alt="Gallery" className="max-w-full max-h-full object-contain" />
+      {selectedImage && college && (
+        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4" onClick={(e) => {
+          if (e.target === e.currentTarget) setSelectedImage(null);
+        }}>
+          <div className="relative w-full max-w-6xl">
+            {/* Close Button */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-white/20 text-white p-2 rounded-full hover:bg-white/30"
+              className="absolute -top-4 right-0 bg-white/10 text-white p-2 rounded-full hover:bg-white/20 transition-colors z-10"
             >
-              ×
+              <X className="h-6 w-6" />
             </button>
+
+            {/* Main Image Container */}
+            <div className="relative bg-black rounded-lg overflow-hidden">
+              <img 
+                src={college.images[currentImageCategory][selectedImageIndex].url} 
+                alt={college.images[currentImageCategory][selectedImageIndex].description}
+                className="w-full max-h-[70vh] object-contain mx-auto" 
+              />
+              
+              {/* Navigation Buttons */}
+              {college.images[currentImageCategory].length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newIndex = selectedImageIndex === 0 
+                        ? college.images[currentImageCategory].length - 1 
+                        : selectedImageIndex - 1;
+                      setSelectedImageIndex(newIndex);
+                      setSelectedImage(college.images[currentImageCategory][newIndex].url);
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-colors"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newIndex = selectedImageIndex === college.images[currentImageCategory].length - 1 
+                        ? 0 
+                        : selectedImageIndex + 1;
+                      setSelectedImageIndex(newIndex);
+                      setSelectedImage(college.images[currentImageCategory][newIndex].url);
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-colors"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                </>
+              )}
+
+              {/* Image Counter */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
+                {selectedImageIndex + 1} / {college.images[currentImageCategory].length}
+              </div>
+            </div>
+
+            {/* Image Info */}
+            <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4 text-white">
+              <p className="text-lg font-medium mb-1">{college.images[currentImageCategory][selectedImageIndex].description}</p>
+              <div className="flex items-center gap-4 text-sm text-white/70">
+                {college.images[currentImageCategory][selectedImageIndex].date && (
+                  <span>Date: {college.images[currentImageCategory][selectedImageIndex].date}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Thumbnail Strip */}
+            <div className="mt-4 overflow-x-auto">
+              <div className="flex gap-2 pb-2">
+                {college.images[currentImageCategory].map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImageIndex(index);
+                      setSelectedImage(image.url);
+                    }}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      index === selectedImageIndex 
+                        ? 'border-blue-500 opacity-100 scale-105' 
+                        : 'border-white/20 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img 
+                      src={image.url} 
+                      alt={image.description}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
