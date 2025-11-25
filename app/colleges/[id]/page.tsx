@@ -362,11 +362,10 @@ interface CollegeData {
   scholarships: Array<{
     name: string;
     benefits: string[];
-    eligibility: string;
+    eligibility: string[];
     description: string;
     deadline?: string;
-    applyLink?: string;
-    referenceLinks?: string[];
+    referenceLink?: string;
   }>;
   startups: Array<{
     startup_name: string;
@@ -392,8 +391,9 @@ interface CollegeData {
   };
   nearbyPlaces: Array<{
     name: string;
+    category: string;
     distance: string;
-    type: string;
+    link: string;
   }>;
 }
 
@@ -597,11 +597,7 @@ const CollegePage = () => {
           
           socialMedia: mainData.college_social_media,
           
-          nearbyPlaces: mainData.college_nearby_places.places.map((p: any) => ({
-            name: p.name,
-            distance: p.distance,
-            type: p.type
-          }))
+          nearbyPlaces: mainData.college_nearby_places.places
         };
         console.log('Fetched College Data:', collegeData.admissions);
         setCollege(collegeData);
@@ -899,281 +895,456 @@ const CollegePage = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2">
+          <div>
             {activeTab === 'overview' && (
-              <div className="space-y-8">
+              <div className="space-y-8 grid grid-cols-1 md:grid-cols-2 gap-8"> 
+
                 {/* About Section */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">About {college.shortName}</h2>
-                  <div dangerouslySetInnerHTML={{ __html: college.aboutHTML }} />
-                </div>
-
-
-                {/* Scholarships & Financial Aid */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Scholarships & Financial Aid</h2>
-                    <div className="relative w-64">
-                      <input
-                        type="text"
-                        placeholder="Search scholarships..."
-                        value={scholarshipSearch}
-                        onChange={(e) => setScholarshipSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      />
-                      <svg
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                    </div>
+                <div className="space-y-8">
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">About {college.shortName}</h2>
+                    <div dangerouslySetInnerHTML={{ __html: college.aboutHTML }} />
                   </div>
-                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                    {college.scholarships
-                      .filter((scholarship) => {
-                        if (!scholarshipSearch) return true;
-                        const searchLower = scholarshipSearch.toLowerCase();
-                        return (
-                          scholarship.name.toLowerCase().includes(searchLower) ||
-                          scholarship.description?.toLowerCase().includes(searchLower) ||
-                          scholarship.eligibility?.toLowerCase().includes(searchLower) ||
-                          scholarship.benefits?.some(benefit => benefit.toLowerCase().includes(searchLower))
-                        );
-                      })
-                      .map((scholarship, index) => (
-                      <div key={index} className="border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-lg hover:shadow-md transition-all">
-                        {/* Header */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <Award className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                              <h3 className="font-bold text-gray-900 text-lg">{scholarship.name}</h3>
+
+
+                  {/* Scholarships & Financial Aid */}
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl font-bold text-gray-800">Scholarships & Financial Aid</h2>
+                      <div className="relative w-64">
+                        <input
+                          type="text"
+                          placeholder="Search scholarships..."
+                          value={scholarshipSearch}
+                          onChange={(e) => setScholarshipSearch(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        />
+                        <svg
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                      {college.scholarships
+                        .filter((scholarship) => {
+                          if (!scholarshipSearch) return true;
+                          const searchLower = scholarshipSearch.toLowerCase();
+                          return (
+                            scholarship.name.toLowerCase().includes(searchLower) ||
+                            scholarship.description?.toLowerCase().includes(searchLower) ||
+                            scholarship.eligibility?.some(eligibility => eligibility.toLowerCase().includes(searchLower)) ||
+                            scholarship.benefits?.some(benefit => benefit.toLowerCase().includes(searchLower))
+                          );
+                        })
+                        .map((scholarship, index) => (
+                        <div key={index} className="border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white p-5 rounded-r-lg hover:shadow-md transition-all">
+                          {/* Header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <Award className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                                <h3 className="font-bold text-gray-900 text-lg">{scholarship.name}</h3>
+                              </div>
+                              {scholarship.description && (
+                                <p className="text-sm text-gray-600 leading-relaxed ml-8">{scholarship.description}</p>
+                              )}
                             </div>
-                            {scholarship.description && (
-                              <p className="text-sm text-gray-600 leading-relaxed ml-8">{scholarship.description}</p>
+                            {scholarship.deadline && (
+                              <div className="flex items-center gap-1.5 bg-orange-100 text-orange-700 px-3 py-1 rounded-full ml-4">
+                                <Clock className="h-3.5 w-3.5" />
+                                <span className="text-xs font-medium whitespace-nowrap">Deadline: {scholarship.deadline}</span>
+                              </div>
                             )}
                           </div>
-                          {scholarship.deadline && (
-                            <div className="flex items-center gap-1.5 bg-orange-100 text-orange-700 px-3 py-1 rounded-full ml-4">
-                              <Clock className="h-3.5 w-3.5" />
-                              <span className="text-xs font-medium whitespace-nowrap">{scholarship.deadline}</span>
+                          
+                          {/* Content Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-8">
+                            {/* Benefits */}
+                            {scholarship.benefits && scholarship.benefits.length > 0 && (
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-2">
+                                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                  Key Benefits
+                                </h4>
+                                <ul className="space-y-1.5 pl-6">
+                                  {scholarship.benefits.map((benefit, idx) => (
+                                    <li key={idx} className="text-sm text-gray-700 list-disc">
+                                      {benefit}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Eligibility */}
+                            {scholarship.eligibility && (
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-2">
+                                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                                  Eligibility
+                                </h4>
+                                <ul className="space-y-1.5 pl-6">
+                                  {scholarship.eligibility.map((eligibility, idx) => (
+                                    <li key={idx} className="text-sm text-gray-700 list-disc">
+                                      {eligibility}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Footer */}
+                          {scholarship.referenceLink && (
+                            <div className="flex items-center justify-end mt-4 ml-8 pt-4 border-t border-gray-200">
+                              <Link
+                                href={scholarship.referenceLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors shadow-sm hover:shadow-md"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                View Details & Apply
+                              </Link>
                             </div>
                           )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+
+                  {/* Latest News */}
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Latest News</h2>
+                    <div className="relative">
+                      <div className="overflow-x-auto scrollbar-hide">
+                        <div className="flex gap-4 pb-4" style={{ scrollSnapType: 'x mandatory' }}>
+                          {college.news.map((newsItem, index) => (
+                            <div 
+                              key={index} 
+                              className="flex-shrink-0 w-72 border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                              style={{ scrollSnapAlign: 'start' }}
+                            >
+                              <img src={newsItem.image} alt={newsItem.title} className="w-full h-40 object-cover" />
+                              <div className="p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium">
+                                    {newsItem.category}
+                                  </span>
+                                  <span className="text-gray-500 text-xs">{newsItem.date}</span>
+                                </div>
+                                <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">{newsItem.title}</h3>
+                                <p className="text-gray-600 text-sm line-clamp-2">{newsItem.excerpt}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <style jsx>{`
+                      .scrollbar-hide::-webkit-scrollbar {
+                        display: none;
+                      }
+                      .scrollbar-hide {
+                        -ms-overflow-style: none;
+                        scrollbar-width: none;
+                      }
+                    `}</style>
+                  </div>
+
+                  {/* Alumni Network */}
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Notable Alumni</h2>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-blue-600">{college.alumniNetwork.totalAlumni.toLocaleString()}+</div>
+                      <div className="text-sm text-gray-600">Alumni Worldwide</div>
+                    </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                    {college.alumniNetwork.notableAlumni.map((alumni, index) => (
+                      <div key={index} className="bg-gradient-to-br from-blue-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 transition-all">
+                      {/* Alumni Image */}
+                      <div className="flex justify-center mb-3">
+                        <img 
+                        src={alumni.image} 
+                        alt={alumni.name || 'Alumni'} 
+                        className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+                        />
+                      </div>
+                      
+                      {/* Alumni Details */}
+                      <div className="space-y-2">
+                        {alumni.name && (
+                        <h3 className="font-bold text-gray-900 text-center text-sm line-clamp-2 min-h-[2.5rem]">
+                          {alumni.name}
+                        </h3>
+                        )}
+                        
+                        {alumni.position && (
+                        <p className="text-xs text-gray-700 text-center font-medium line-clamp-1">
+                          {alumni.position}
+                        </p>
+                        )}
+                        
+                        {alumni.organisation && (
+                        <div className="flex items-center justify-center gap-1">
+                          <Building className="h-3 w-3 text-blue-600 flex-shrink-0" />
+                          <p className="text-xs text-blue-600 font-semibold line-clamp-1">
+                          {alumni.organisation}
+                          </p>
+                        </div>
+                        )}
+                        
+                        <div className="flex items-center justify-center gap-3 pt-2">
+                        {alumni.batch && (
+                          <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
+                          <GraduationCap className="h-3 w-3 text-gray-600" />
+                          <span className="text-xs text-gray-600 font-medium">{alumni.batch}</span>
+                          </div>
+                        )}
+                        
+                        {alumni.branch && (
+                          <div className="flex items-center gap-1 bg-purple-100 px-2 py-1 rounded-full">
+                          <BookOpen className="h-3 w-3 text-purple-600" />
+                          <span className="text-xs text-purple-600 font-medium line-clamp-1">{alumni.branch}</span>
+                          </div>
+                        )}
                         </div>
                         
-                        {/* Content Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-8">
-                          {/* Benefits */}
-                          {scholarship.benefits && scholarship.benefits.length > 0 && (
-                            <div>
-                              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                Key Benefits
-                              </h4>
-                              <ul className="space-y-1.5 pl-6">
-                                {scholarship.benefits.map((benefit, idx) => (
-                                  <li key={idx} className="text-sm text-gray-700 list-disc">
-                                    {benefit}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          
-                          {/* Eligibility */}
-                          {scholarship.eligibility && (
-                            <div>
-                              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                                Eligibility
-                              </h4>
-                              <p className="text-sm text-gray-700 pl-6">{scholarship.eligibility}</p>
-                            </div>
-                          )}
+                        {alumni.achievement && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="flex items-start gap-2 bg-yellow-50 rounded-lg p-2">
+                          <Trophy className="h-3.5 w-3.5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-gray-700 leading-relaxed line-clamp-3">
+                            {alumni.achievement}
+                          </p>
+                          </div>
                         </div>
+                        )}
+                      </div>
+                      </div>
+                    ))}
+                    </div>
+                  </div>
 
-                        {/* Footer */}
-                        <div className="flex items-center gap-3 mt-4 ml-8 pt-4 border-t border-gray-200">
-                          {/* Reference Links */}
-                          {scholarship.referenceLinks && scholarship.referenceLinks.length > 0 && (
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-semibold text-gray-600">Resources:</span>
-                              {scholarship.referenceLinks.map((link, idx) => (
-                                <Link
-                                  key={idx}
-                                  href={link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded transition-colors"
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                  Link {idx + 1}
-                                </Link>
-                              ))}
-                            </div>
+                  {/* Startups */}
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Successful Startups</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[400px] overflow-y-auto pr-2">
+                    {college.startups.map((startup, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-center mb-3">
+                      <img src={startup.image} alt={startup.startup_name} className="w-12 h-12 rounded-lg mr-3 object-cover" />
+                      <div>
+                      <h3 className="font-semibold text-gray-800">{startup.startup_name}</h3>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 text-sm mb-3">{startup.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                    </div>
+                    </div>
+                    ))}
+                    </div>
+                  </div>
+                </div>
+                             
+                {/* Sidebar */}
+                <div className="space-y-6">
+                  {/* Contact Information */}
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Contact Information</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-start">
+                        <Phone className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
+                        <div>
+                          {college.contact.phone.map((phone, index) => (
+                            <p key={index} className="text-gray-600">{phone}</p>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Mail className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
+                        <div>
+                          {college.contact.email.map((email, index) => (
+                            <p key={index} className="text-gray-600">{email}</p>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <MapPin className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
+                        <div>
+                          <p className="text-gray-600">{college.location.address}, {college.location.city}, {college.location.state} - {college.location.pincode}</p>
+
+                          <div className="mt-3 rounded overflow-hidden border border-gray-100">
+                            <iframe
+                              src={`https://www.google.com/maps?q=${college.location.coordinates.lat},${college.location.coordinates.lng}&z=15&output=embed`}
+                              width="100%"
+                              height="200"
+                              className="border-0"
+                              loading="lazy"
+                              referrerPolicy="no-referrer-when-downgrade"
+                              allowFullScreen
+                              title={`${college.name} location`}
+                            ></iframe>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                      {/* Helplines */}
+                      {college.contact.helpline && (
+                        <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
+                        {/* Admission Helpline */}
+                        {college.contact.helpline.admission && (
+                          <div>
+                          <p className="text-sm font-medium text-gray-800 mb-1">Admission Helpline</p>
+                          {college.contact.helpline.admission.phone && (
+                            <p className="text-blue-600 font-semibold">
+                            <Phone className="inline h-4 w-4 mr-1" />
+                            {college.contact.helpline.admission.phone}
+                            </p>
                           )}
-                          
-                          {/* Apply Button */}
-                          {scholarship.applyLink && (
-                            <Link
-                              href={scholarship.applyLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors ml-auto"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Apply Now
+                          {college.contact.helpline.admission.email && (
+                            <p className="text-blue-600 font-semibold">
+                            <Mail className="inline h-4 w-4 mr-1" />
+                            {college.contact.helpline.admission.email}
+                            </p>
+                          )}
+                          </div>
+                        )}
+                        {/* Scholarships Helpline */}
+                        {college.contact.helpline.scholarships && (
+                          <div>
+                          <p className="text-sm font-medium text-gray-800 mb-1">Scholarship Helpline</p>
+                          {college.contact.helpline.scholarships.phone && (
+                            <p className="text-green-600 font-semibold">
+                            <Phone className="inline h-4 w-4 mr-1" />
+                            {college.contact.helpline.scholarships.phone}
+                            </p>
+                          )}
+                          {college.contact.helpline.scholarships.email && (
+                            <p className="text-green-600 font-semibold">
+                            <Mail className="inline h-4 w-4 mr-1" />
+                            {college.contact.helpline.scholarships.email}
+                            </p>
+                          )}
+                          </div>
+                        )}
+                        {/* General Helpline */}
+                        {college.contact.helpline.general && (
+                          <div>
+                          <p className="text-sm font-medium text-gray-800 mb-1">General Helpline</p>
+                          {college.contact.helpline.general.phone && (
+                            <p className="text-gray-600 font-semibold">
+                            <Phone className="inline h-4 w-4 mr-1" />
+                            {college.contact.helpline.general.phone}
+                            </p>
+                          )}
+                          {college.contact.helpline.general.email && (
+                            <p className="text-gray-600 font-semibold">
+                            <Mail className="inline h-4 w-4 mr-1" />
+                            {college.contact.helpline.general.email}
+                            </p>
+                          )}
+                          </div>
+                        )}
+                        </div>
+                      )}
+                  </div>
+
+                  {/* Social Media */}
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Follow Us</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 mb-2">Official Pages</p>
+                        <div className="flex flex-wrap gap-2">
+                          {college.socialMedia.official.facebook && (
+                            <Link href={college.socialMedia.official.facebook} target="_blank" className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
+                              <Facebook className="h-4 w-4" />
+                            </Link>
+                          )}
+                          {college.socialMedia.official.twitter && (
+                            <Link href={college.socialMedia.official.twitter} target="_blank" className="p-2 bg-sky-100 text-sky-600 rounded-lg hover:bg-sky-200">
+                              <Twitter className="h-4 w-4" />
+                            </Link>
+                          )}
+                          {college.socialMedia.official.instagram && (
+                            <Link href={college.socialMedia.official.instagram} target="_blank" className="p-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200">
+                              <Instagram className="h-4 w-4" />
+                            </Link>
+                          )}
+                          {college.socialMedia.official.youtube && (
+                            <Link href={college.socialMedia.official.youtube} target="_blank" className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
+                              <Youtube className="h-4 w-4" />
+                            </Link>
+                          )}
+                          {college.socialMedia.official.linkedin && (
+                            <Link href={college.socialMedia.official.linkedin} target="_blank" className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
+                              <Linkedin className="h-4 w-4" />
                             </Link>
                           )}
                         </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
 
-
-                {/* Latest News */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Latest News</h2>
-                  <div className="relative">
-                    <div className="overflow-x-auto scrollbar-hide">
-                      <div className="flex gap-4 pb-4" style={{ scrollSnapType: 'x mandatory' }}>
-                        {college.news.map((newsItem, index) => (
-                          <div 
-                            key={index} 
-                            className="flex-shrink-0 w-72 border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-                            style={{ scrollSnapAlign: 'start' }}
-                          >
-                            <img src={newsItem.image} alt={newsItem.title} className="w-full h-40 object-cover" />
-                            <div className="p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium">
-                                  {newsItem.category}
-                                </span>
-                                <span className="text-gray-500 text-xs">{newsItem.date}</span>
-                              </div>
-                              <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">{newsItem.title}</h3>
-                              <p className="text-gray-600 text-sm line-clamp-2">{newsItem.excerpt}</p>
-                            </div>
+                  {/* Ratings Breakdown */}
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Ratings Breakdown</h3>
+                    <div className="space-y-3">
+                      {Object.entries(college.ratings).filter(([key]) => key !== 'totalReviews').map(([category, rating]) => (
+                        <div key={category} className="flex items-center justify-between">
+                          <span className="text-gray-600 capitalize">{category.replace(/([A-Z])/g, ' $1').trim()}</span>
+                          <div className="flex items-center">
+                            <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
+                            <span className="font-semibold">{rating}</span>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <style jsx>{`
-                    .scrollbar-hide::-webkit-scrollbar {
-                      display: none;
-                    }
-                    .scrollbar-hide {
-                      -ms-overflow-style: none;
-                      scrollbar-width: none;
-                    }
-                  `}</style>
-                </div>
 
-                {/* Alumni Network */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800">Notable Alumni</h2>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-600">{college.alumniNetwork.totalAlumni.toLocaleString()}+</div>
-                    <div className="text-sm text-gray-600">Alumni Worldwide</div>
-                  </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto pr-2">
-                  {college.alumniNetwork.notableAlumni.map((alumni, index) => (
-                    <div key={index} className="bg-gradient-to-br from-blue-50 to-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 transition-all">
-                    {/* Alumni Image */}
-                    <div className="flex justify-center mb-3">
-                      <img 
-                      src={alumni.image} 
-                      alt={alumni.name || 'Alumni'} 
-                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
-                      />
-                    </div>
-                    
-                    {/* Alumni Details */}
-                    <div className="space-y-2">
-                      {alumni.name && (
-                      <h3 className="font-bold text-gray-900 text-center text-sm line-clamp-2 min-h-[2.5rem]">
-                        {alumni.name}
-                      </h3>
-                      )}
-                      
-                      {alumni.position && (
-                      <p className="text-xs text-gray-700 text-center font-medium line-clamp-1">
-                        {alumni.position}
-                      </p>
-                      )}
-                      
-                      {alumni.organisation && (
-                      <div className="flex items-center justify-center gap-1">
-                        <Building className="h-3 w-3 text-blue-600 flex-shrink-0" />
-                        <p className="text-xs text-blue-600 font-semibold line-clamp-1">
-                        {alumni.organisation}
-                        </p>
+                  {/* Nearby Places */}
+                  <div className="bg-white rounded-xl shadow-sm p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Nearby Places</h3>
+                    <div className="space-y-3">
+                    {college.nearbyPlaces.map((place, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div>
+                        {place.link ? (
+                        <Link
+                          href={place.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+                        >
+                          {place.name}
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                        ) : (
+                        <p className="font-medium text-gray-800">{place.name}</p>
+                        )}
+                        <p className="text-sm text-gray-600">{place.category}</p>
                       </div>
-                      )}
-                      
-                      <div className="flex items-center justify-center gap-3 pt-2">
-                      {alumni.batch && (
-                        <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
-                        <GraduationCap className="h-3 w-3 text-gray-600" />
-                        <span className="text-xs text-gray-600 font-medium">{alumni.batch}</span>
-                        </div>
-                      )}
-                      
-                      {alumni.branch && (
-                        <div className="flex items-center gap-1 bg-purple-100 px-2 py-1 rounded-full">
-                        <BookOpen className="h-3 w-3 text-purple-600" />
-                        <span className="text-xs text-purple-600 font-medium line-clamp-1">{alumni.branch}</span>
-                        </div>
-                      )}
+                      <span className="text-blue-600 font-semibold text-sm">{place.distance}</span>
                       </div>
-                      
-                      {alumni.achievement && (
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <div className="flex items-start gap-2 bg-yellow-50 rounded-lg p-2">
-                        <Trophy className="h-3.5 w-3.5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-gray-700 leading-relaxed line-clamp-3">
-                          {alumni.achievement}
-                        </p>
-                        </div>
-                      </div>
-                      )}
+                    ))}
                     </div>
-                    </div>
-                  ))}
-                  </div>
-                </div>
-
-                {/* Startups */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Successful Startups</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[400px] overflow-y-auto pr-2">
-                  {college.startups.map((startup, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-center mb-3">
-                    <img src={startup.image} alt={startup.startup_name} className="w-12 h-12 rounded-lg mr-3 object-cover" />
-                    <div>
-                    <h3 className="font-semibold text-gray-800">{startup.startup_name}</h3>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-sm mb-3">{startup.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                  </div>
-                  </div>
-                  ))}
                   </div>
                 </div>
               </div>
@@ -2757,180 +2928,6 @@ const CollegePage = () => {
             )}
 
             {/* Other tabs can be implemented similarly */}
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Contact Information */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Contact Information</h3>
-              <div className="space-y-3">
-                <div className="flex items-start">
-                  <Phone className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
-                  <div>
-                    {college.contact.phone.map((phone, index) => (
-                      <p key={index} className="text-gray-600">{phone}</p>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Mail className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
-                  <div>
-                    {college.contact.email.map((email, index) => (
-                      <p key={index} className="text-gray-600">{email}</p>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <MapPin className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
-                  <div>
-                    <p className="text-gray-600">{college.location.address}, {college.location.city}, {college.location.state} - {college.location.pincode}</p>
-
-                    <div className="mt-3 rounded overflow-hidden border border-gray-100">
-                      <iframe
-                        src={`https://www.google.com/maps?q=${college.location.coordinates.lat},${college.location.coordinates.lng}&z=15&output=embed`}
-                        width="100%"
-                        height="200"
-                        className="border-0"
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        allowFullScreen
-                        title={`${college.name} location`}
-                      ></iframe>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-                {/* Helplines */}
-                {college.contact.helpline && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
-                  {/* Admission Helpline */}
-                  {college.contact.helpline.admission && (
-                    <div>
-                    <p className="text-sm font-medium text-gray-800 mb-1">Admission Helpline</p>
-                    {college.contact.helpline.admission.phone && (
-                      <p className="text-blue-600 font-semibold">
-                      <Phone className="inline h-4 w-4 mr-1" />
-                      {college.contact.helpline.admission.phone}
-                      </p>
-                    )}
-                    {college.contact.helpline.admission.email && (
-                      <p className="text-blue-600 font-semibold">
-                      <Mail className="inline h-4 w-4 mr-1" />
-                      {college.contact.helpline.admission.email}
-                      </p>
-                    )}
-                    </div>
-                  )}
-                  {/* Scholarships Helpline */}
-                  {college.contact.helpline.scholarships && (
-                    <div>
-                    <p className="text-sm font-medium text-gray-800 mb-1">Scholarship Helpline</p>
-                    {college.contact.helpline.scholarships.phone && (
-                      <p className="text-green-600 font-semibold">
-                      <Phone className="inline h-4 w-4 mr-1" />
-                      {college.contact.helpline.scholarships.phone}
-                      </p>
-                    )}
-                    {college.contact.helpline.scholarships.email && (
-                      <p className="text-green-600 font-semibold">
-                      <Mail className="inline h-4 w-4 mr-1" />
-                      {college.contact.helpline.scholarships.email}
-                      </p>
-                    )}
-                    </div>
-                  )}
-                  {/* General Helpline */}
-                  {college.contact.helpline.general && (
-                    <div>
-                    <p className="text-sm font-medium text-gray-800 mb-1">General Helpline</p>
-                    {college.contact.helpline.general.phone && (
-                      <p className="text-gray-600 font-semibold">
-                      <Phone className="inline h-4 w-4 mr-1" />
-                      {college.contact.helpline.general.phone}
-                      </p>
-                    )}
-                    {college.contact.helpline.general.email && (
-                      <p className="text-gray-600 font-semibold">
-                      <Mail className="inline h-4 w-4 mr-1" />
-                      {college.contact.helpline.general.email}
-                      </p>
-                    )}
-                    </div>
-                  )}
-                  </div>
-                )}
-            </div>
-
-            {/* Social Media */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Follow Us</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">Official Pages</p>
-                  <div className="flex flex-wrap gap-2">
-                    {college.socialMedia.official.facebook && (
-                      <Link href={college.socialMedia.official.facebook} target="_blank" className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
-                        <Facebook className="h-4 w-4" />
-                      </Link>
-                    )}
-                    {college.socialMedia.official.twitter && (
-                      <Link href={college.socialMedia.official.twitter} target="_blank" className="p-2 bg-sky-100 text-sky-600 rounded-lg hover:bg-sky-200">
-                        <Twitter className="h-4 w-4" />
-                      </Link>
-                    )}
-                    {college.socialMedia.official.instagram && (
-                      <Link href={college.socialMedia.official.instagram} target="_blank" className="p-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200">
-                        <Instagram className="h-4 w-4" />
-                      </Link>
-                    )}
-                    {college.socialMedia.official.youtube && (
-                      <Link href={college.socialMedia.official.youtube} target="_blank" className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
-                        <Youtube className="h-4 w-4" />
-                      </Link>
-                    )}
-                    {college.socialMedia.official.linkedin && (
-                      <Link href={college.socialMedia.official.linkedin} target="_blank" className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
-                        <Linkedin className="h-4 w-4" />
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Ratings Breakdown */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Ratings Breakdown</h3>
-              <div className="space-y-3">
-                {Object.entries(college.ratings).filter(([key]) => key !== 'totalReviews').map(([category, rating]) => (
-                  <div key={category} className="flex items-center justify-between">
-                    <span className="text-gray-600 capitalize">{category.replace(/([A-Z])/g, ' $1').trim()}</span>
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                      <span className="font-semibold">{rating}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Nearby Places */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Nearby Places</h3>
-              <div className="space-y-3">
-                {college.nearbyPlaces.map((place, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-800">{place.name}</p>
-                      <p className="text-sm text-gray-600">{place.type}</p>
-                    </div>
-                    <span className="text-blue-600 font-semibold text-sm">{place.distance}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>
